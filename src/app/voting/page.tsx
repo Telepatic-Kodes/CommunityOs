@@ -1,203 +1,141 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { VotingCard } from "@/components/voting/VotingCard";
-import { VotingForm } from "@/components/voting/VotingForm";
-import { Vote, Plus, Search, Filter, Users, TrendingUp, CheckCircle } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { 
+  Vote, 
+  Plus, 
+  Search, 
+  Filter, 
+  Users, 
+  TrendingUp, 
+  CheckCircle,
+  Calendar,
+  FileText,
+  Shield,
+  Clock,
+  AlertTriangle
+} from "lucide-react";
+import { useConfig } from "@/hooks/useConfig";
+import { 
+  Voting, 
+  getVotings, 
+  getVotingStats,
+  getVotingResults
+} from "@/lib/voting";
 
-interface VotingOption {
-  id: string;
-  text: string;
-  votes: number;
-}
-
-interface Voting {
-  id: string;
-  title: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  total_voters: number;
-  current_votes: number;
-  status: 'upcoming' | 'active' | 'completed' | 'cancelled';
-  voting_type: 'single' | 'multiple' | 'ranked';
-  options: VotingOption[];
-  created_at: string;
-}
-
-// Datos de ejemplo para testing
-const mockVotings: Voting[] = [
-  {
-    id: '1',
-    title: '¿Deberíamos cambiar la fecha de la reunión mensual?',
-    description: 'Votación para decidir si cambiamos la reunión mensual del tercer jueves al primer martes de cada mes.',
-    start_date: '2024-02-01T00:00:00Z',
-    end_date: '2024-02-15T23:59:59Z',
-    total_voters: 50,
-    current_votes: 35,
-    status: 'active',
-    voting_type: 'single',
-    options: [
-      { id: '1', text: 'Sí, cambiar al primer martes', votes: 20 },
-      { id: '2', text: 'No, mantener el tercer jueves', votes: 15 },
-      { id: '3', text: 'Me da igual', votes: 0 }
-    ],
-    created_at: '2024-01-25T00:00:00Z'
-  },
-  {
-    id: '2',
-    title: 'Selección de temas para el próximo taller',
-    description: 'Votación múltiple para seleccionar los temas que más interesan a la comunidad para el próximo taller.',
-    start_date: '2024-02-10T00:00:00Z',
-    end_date: '2024-02-25T23:59:59Z',
-    total_voters: 50,
-    current_votes: 28,
-    status: 'upcoming',
-    voting_type: 'multiple',
-    options: [
-      { id: '1', text: 'Marketing Digital', votes: 0 },
-      { id: '2', text: 'Financiamiento para Startups', votes: 0 },
-      { id: '3', text: 'Legal para Emprendedores', votes: 0 },
-      { id: '4', text: 'Networking y Pitch', votes: 0 },
-      { id: '5', text: 'Gestión de Equipos', votes: 0 }
-    ],
-    created_at: '2024-02-05T00:00:00Z'
-  },
-  {
-    id: '3',
-    title: 'Elección del nuevo presidente de la asociación',
-    description: 'Votación preferencial para elegir al nuevo presidente de la asociación para el período 2024-2025.',
-    start_date: '2024-01-15T00:00:00Z',
-    end_date: '2024-01-30T23:59:59Z',
-    total_voters: 50,
-    current_votes: 42,
-    status: 'completed',
-    voting_type: 'ranked',
-    options: [
-      { id: '1', text: 'María González', votes: 18 },
-      { id: '2', text: 'Carlos Rodríguez', votes: 15 },
-      { id: '3', text: 'Ana Martínez', votes: 9 }
-    ],
-    created_at: '2024-01-10T00:00:00Z'
-  },
-  {
-    id: '4',
-    title: 'Aprobación del presupuesto anual 2024',
-    description: 'Votación para aprobar el presupuesto anual de la asociación para el año 2024.',
-    start_date: '2024-01-20T00:00:00Z',
-    end_date: '2024-02-05T23:59:59Z',
-    total_voters: 50,
-    current_votes: 38,
-    status: 'completed',
-    voting_type: 'single',
-    options: [
-      { id: '1', text: 'Aprobar presupuesto', votes: 32 },
-      { id: '2', text: 'Rechazar presupuesto', votes: 6 }
-    ],
-    created_at: '2024-01-15T00:00:00Z'
-  }
-];
+// ID temporal de organización para testing
+const TEMP_ORG_ID = "temp-org-id";
 
 export default function VotingPage() {
-  const [votings, setVotings] = useState(mockVotings);
+  const { config } = useConfig();
+  const [polls, setPolls] = useState<Voting[]>([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    closed: 0,
+    draft: 0,
+    cancelled: 0,
+    upcoming: 0,
+    averageParticipation: 0,
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [showForm, setShowForm] = useState(false);
-  const [editingVoting, setEditingVoting] = useState<Voting | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [userVotes, setUserVotes] = useState<Set<string>>(new Set(['3', '4'])); // Simular votos del usuario
+  const [loading, setLoading] = useState(true);
+
+  // Cargar datos
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [pollsData, statsData] = await Promise.all([
+          getVotings(TEMP_ORG_ID),
+          getVotingStats(TEMP_ORG_ID)
+        ]);
+        
+        setPolls(pollsData);
+        setStats(statsData);
+      } catch (error) {
+        console.error('Error loading voting data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // Filtrar votaciones
-  const filteredVotings = votings.filter(voting => {
+  const filteredPolls = polls.filter(poll => {
     const matchesSearch = 
-      voting.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      voting.description.toLowerCase().includes(searchTerm.toLowerCase());
+      poll.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      poll.description.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || voting.status === statusFilter;
-    const matchesType = typeFilter === 'all' || voting.voting_type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || poll.status === statusFilter;
     
-    return matchesSearch && matchesStatus && matchesType;
+    return matchesSearch && matchesStatus;
   });
 
-  // Calcular estadísticas
-  const stats = {
-    total: votings.length,
-    active: votings.filter(v => v.status === 'active').length,
-    upcoming: votings.filter(v => v.status === 'upcoming').length,
-    completed: votings.filter(v => v.status === 'completed').length,
-    totalVoters: votings.reduce((sum, v) => sum + v.total_voters, 0),
-    totalVotes: votings.reduce((sum, v) => sum + v.current_votes, 0),
-    averageParticipation: votings.length > 0 ? Math.round(votings.reduce((sum, v) => sum + (v.current_votes / v.total_voters * 100), 0) / votings.length) : 0
-  };
-
-  const handleAddVoting = async (votingData: Omit<Voting, 'id' | 'created_at'>) => {
-    setLoading(true);
-    // Simular llamada a API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newVoting: Voting = {
-      ...votingData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString()
-    };
-    
-    setVotings(prev => [...prev, newVoting]);
-    setShowForm(false);
-    setLoading(false);
-  };
-
-  const handleEditVoting = async (votingData: Omit<Voting, 'id' | 'created_at'>) => {
-    setLoading(true);
-    // Simular llamada a API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setVotings(prev => prev.map(voting => 
-      voting.id === editingVoting?.id ? { ...voting, ...votingData } : voting
-    ));
-    
-    setEditingVoting(null);
-    setLoading(false);
-  };
-
-  const handleDeleteVoting = async (votingId: string) => {
-    if (confirm('¿Estás seguro de que quieres eliminar esta votación?')) {
-      setLoading(true);
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setVotings(prev => prev.filter(voting => voting.id !== votingId));
-      setLoading(false);
+  // Función para obtener el color del badge según el estado
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'draft': return 'bg-yellow-100 text-yellow-800';
+      case 'closed': return 'bg-blue-100 text-blue-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleVote = async (votingId: string) => {
-    setLoading(true);
-    // Simular llamada a API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setVotings(prev => prev.map(voting => 
-      voting.id === votingId 
-        ? { ...voting, current_votes: voting.current_votes + 1 }
-        : voting
-    ));
-    
-    setUserVotes(prev => new Set([...prev, votingId]));
-    setLoading(false);
-    alert('¡Tu voto ha sido registrado exitosamente!');
-  };
-
-  const handleSubmit = (votingData: Omit<Voting, 'id' | 'created_at'>) => {
-    if (editingVoting) {
-      handleEditVoting(votingData);
-    } else {
-      handleAddVoting(votingData);
+  // Función para obtener el texto del estado
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return 'Activa';
+      case 'draft': return 'Borrador';
+      case 'closed': return 'Cerrada';
+      case 'cancelled': return 'Cancelada';
+      default: return status;
     }
   };
+
+  // Función para formatear fecha
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-CL', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Función para verificar si una votación está activa
+  const isPollActive = (poll: VotingPoll) => {
+    const now = new Date();
+    return poll.status === 'active' && 
+           now >= new Date(poll.start_date) && 
+           now <= new Date(poll.end_date);
+  };
+
+  // Función para generar acta
+  const handleGenerateMinutes = async (pollId: string) => {
+    try {
+      const minutesUrl = await generateVotingMinutes(pollId);
+      window.open(minutesUrl, '_blank');
+    } catch (error) {
+      console.error('Error generating minutes:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -207,19 +145,25 @@ export default function VotingPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-black">Sistema de Votaciones</h1>
-              <span className="text-sm text-gray-500">ASECH - Asociación de Emprendedores</span>
+              <span className="text-sm text-gray-500">{config.organization.name}</span>
             </div>
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Votación
-            </Button>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" size="sm">
+                <FileText className="h-4 w-4 mr-2" />
+                Generar Acta
+              </Button>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Votación
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Stats */}
+        {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -228,48 +172,40 @@ export default function VotingPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-gray-600">
-                {stats.active} activas
-              </p>
+              <p className="text-xs text-gray-600">Todas las votaciones</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Participación</CardTitle>
-              <Users className="h-4 w-4 text-gray-600" />
+              <CardTitle className="text-sm font-medium">Votaciones Activas</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalVotes}</div>
-              <p className="text-xs text-gray-600">
-                de {stats.totalVoters} votantes
-              </p>
+              <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+              <p className="text-xs text-gray-600">En curso actualmente</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Promedio Participación</CardTitle>
-              <TrendingUp className="h-4 w-4 text-gray-600" />
+              <CardTitle className="text-sm font-medium">Próximas</CardTitle>
+              <Clock className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.averageParticipation}%</div>
-              <p className="text-xs text-gray-600">
-                participación promedio
-              </p>
+              <div className="text-2xl font-bold text-blue-600">{stats.upcoming}</div>
+              <p className="text-xs text-gray-600">Programadas</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completadas</CardTitle>
-              <CheckCircle className="h-4 w-4 text-gray-600" />
+              <CardTitle className="text-sm font-medium">Participación Promedio</CardTitle>
+              <TrendingUp className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.completed}</div>
-              <p className="text-xs text-gray-600">
-                votaciones finalizadas
-              </p>
+              <div className="text-2xl font-bold text-purple-600">{stats.averageParticipation}%</div>
+              <p className="text-xs text-gray-600">De los miembros elegibles</p>
             </CardContent>
           </Card>
         </div>
@@ -287,80 +223,132 @@ export default function VotingPage() {
                   className="pl-10"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value="upcoming">Próximas</SelectItem>
-                  <SelectItem value="active">Activas</SelectItem>
-                  <SelectItem value="completed">Completadas</SelectItem>
-                  <SelectItem value="cancelled">Canceladas</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los tipos</SelectItem>
-                  <SelectItem value="single">Voto Único</SelectItem>
-                  <SelectItem value="multiple">Voto Múltiple</SelectItem>
-                  <SelectItem value="ranked">Voto Preferencial</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar por estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="active">Activas</SelectItem>
+                    <SelectItem value="draft">Borradores</SelectItem>
+                    <SelectItem value="closed">Cerradas</SelectItem>
+                    <SelectItem value="cancelled">Canceladas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Voting Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <VotingForm
-              voting={editingVoting || undefined}
-              onSubmit={handleSubmit}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingVoting(null);
-              }}
-              loading={loading}
-            />
-          </div>
-        )}
-
-        {/* Votings Grid */}
+        {/* Voting Polls Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVotings.map((voting) => (
-            <VotingCard
-              key={voting.id}
-              voting={voting}
-              onEdit={(voting) => {
-                setEditingVoting(voting);
-                setShowForm(true);
-              }}
-              onDelete={handleDeleteVoting}
-              onVote={handleVote}
-              hasVoted={userVotes.has(voting.id)}
-            />
+          {filteredPolls.map((poll) => (
+            <Card key={poll.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-semibold mb-2">
+                      {poll.title}
+                    </CardTitle>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Badge className={getStatusColor(poll.status)}>
+                        {getStatusText(poll.status)}
+                      </Badge>
+                      {isPollActive(poll) && (
+                        <Badge className="bg-red-100 text-red-800">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Activa
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-600 text-sm line-clamp-3">
+                  {poll.description}
+                </p>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center text-gray-500">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {formatDate(poll.start_date)} - {formatDate(poll.end_date)}
+                  </div>
+                  <div className="flex items-center text-gray-500">
+                    <Vote className="h-4 w-4 mr-2" />
+                    {poll.voting_method === 'simple' ? 'Votación Simple' :
+                     poll.voting_method === 'ranked' ? 'Votación Preferencial' : 'Votación por Aprobación'}
+                  </div>
+                  {poll.require_quorum && (
+                    <div className="flex items-center text-gray-500">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Quórum: {poll.quorum_percentage}%
+                    </div>
+                  )}
+                  <div className="flex items-center text-gray-500">
+                    <Users className="h-4 w-4 mr-2" />
+                    {poll.options.length} opciones
+                  </div>
+                </div>
+
+                <div className="pt-4 space-y-2">
+                  {poll.options.map((option) => (
+                    <div key={option.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <span className="text-sm font-medium">{option.text}</span>
+                      {option.description && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          {option.description}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  {poll.status === 'active' && (
+                    <Button size="sm" className="flex-1">
+                      <Vote className="h-4 w-4 mr-2" />
+                      Votar
+                    </Button>
+                  )}
+                  {poll.status === 'closed' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleGenerateMinutes(poll.id)}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Ver Resultados
+                    </Button>
+                  )}
+                  {poll.status === 'draft' && (
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Activar
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
-        {filteredVotings.length === 0 && (
+        {filteredPolls.length === 0 && (
           <Card>
             <CardContent className="text-center py-12">
               <Vote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm || statusFilter !== 'all' || typeFilter !== 'all' ? 'No se encontraron votaciones' : 'No hay votaciones aún'}
+                {searchTerm ? 'No se encontraron votaciones' : 'No hay votaciones registradas'}
               </h3>
               <p className="text-gray-600 mb-4">
-                {searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
-                  ? 'Intenta con otros filtros de búsqueda'
-                  : 'Comienza creando la primera votación para tu comunidad'
+                {searchTerm 
+                  ? 'Intenta con otros términos de búsqueda'
+                  : 'Las votaciones aparecerán aquí cuando se creen'
                 }
               </p>
-              {!searchTerm && statusFilter === 'all' && typeFilter === 'all' && (
-                <Button onClick={() => setShowForm(true)}>
+              {!searchTerm && (
+                <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Crear Votación
                 </Button>

@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    // ============================================================================
+    // CONFIGURACIÓN BÁSICA
+    // ============================================================================
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -18,10 +21,113 @@
         "name": "next"
       }
     ],
+
+    // ============================================================================
+    // CONFIGURACIÓN DE PATHS
+    // ============================================================================
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils/*": ["./src/lib/utils.ts"]
+    },
+
+    // ============================================================================
+    // CONFIGURACIÓN ESTRICTA (EQUILIBRADA)
+    // ============================================================================
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false, // Deshabilitado temporalmente
+    "noUnusedParameters": false, // Deshabilitado temporalmente
+    "exactOptionalPropertyTypes": false, // Deshabilitado temporalmente
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false, // Deshabilitado temporalmente
+    "noUncheckedIndexedAccess": false, // Deshabilitado temporalmente
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    // ============================================================================
+    // CONFIGURACIÓN DE TIPOS
+    // ============================================================================
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "importHelpers": true,
+
+    // ============================================================================
+    // CONFIGURACIÓN DE MÓDULOS
+    // ============================================================================
+    "allowSyntheticDefaultImports": true,
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": false, // Deshabilitado temporalmente
+
+    // ============================================================================
+    // CONFIGURACIÓN DE EXPERIMENTALES
+    // ============================================================================
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": true,
+
+    // ============================================================================
+    // CONFIGURACIÓN DE COMPLETADO
+    // ============================================================================
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitUseStrict": false,
+    "noStrictGenericChecks": false,
+    "suppressImplicitAnyIndexErrors": false,
+    "suppressExcessPropertyErrors": false,
+
+    // ============================================================================
+    // CONFIGURACIÓN DE PERFORMANCE
+    // ============================================================================
+    "assumeChangesOnlyAffectDirectDependencies": true,
+    "disableSourceOfProjectReferenceRedirect": false,
+    "disableSizeLimit": false,
+    "listEmittedFiles": false,
+    "listFiles": false,
+    "traceResolution": false,
+
+    // ============================================================================
+    // CONFIGURACIÓN DE INTEROP
+    // ============================================================================
+    "allowImportingTsExtensions": false,
+    "noEmitOnError": false,
+    "preserveConstEnums": true,
+    "preserveSymlinks": false,
+    "preserveWatchOutput": false,
+
+    // ============================================================================
+    // CONFIGURACIÓN DE COMPILACIÓN
+    // ============================================================================
+    "composite": false,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./.tsbuildinfo"
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+
+  // ============================================================================
+  // INCLUSIÓN Y EXCLUSIÓN DE ARCHIVOS
+  // ============================================================================
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/**/*",
+    "types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    "coverage",
+    "*.config.js",
+    "*.config.mjs",
+    "*.config.ts"
+  ]
 }

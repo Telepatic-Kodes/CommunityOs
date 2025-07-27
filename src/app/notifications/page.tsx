@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NotificationCard } from "@/components/notifications/NotificationCard";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 import { 
@@ -200,13 +200,18 @@ export default function NotificationsPage() {
             {/* Filters and Actions */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <Select value={filter} onChange={(e) => setFilter(e.target.value as "payment" | "event" | "voting" | "member" | "all" | "unread")}>
-                  <option value="all">Todas</option>
-                  <option value="unread">Sin leer</option>
-                  <option value="payment">Pagos</option>
-                  <option value="event">Eventos</option>
-                  <option value="voting">Votaciones</option>
-                  <option value="member">Miembros</option>
+                <Select value={filter} onValueChange={(value) => setFilter(value as "payment" | "event" | "voting" | "member" | "all" | "unread")}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar notificaciones" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="unread">Sin leer</SelectItem>
+                    <SelectItem value="payment">Pagos</SelectItem>
+                    <SelectItem value="event">Eventos</SelectItem>
+                    <SelectItem value="voting">Votaciones</SelectItem>
+                    <SelectItem value="member">Miembros</SelectItem>
+                  </SelectContent>
                 </Select>
                 <span className="text-sm text-gray-600">
                   {filteredNotifications.length} notificación{filteredNotifications.length !== 1 ? 'es' : ''}

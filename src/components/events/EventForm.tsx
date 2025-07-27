@@ -4,43 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MapPin, Users, DollarSign, X } from "lucide-react";
-
-interface Event {
-  id?: string;
-  title: string;
-  description: string;
-  location: string;
-  start_date: string;
-  end_date: string;
-  capacity: number;
-  registered_count?: number;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  event_type: 'meeting' | 'workshop' | 'conference' | 'social' | 'training';
-  price: number;
-  currency: string;
-}
+import { Calendar, MapPin, Users, X } from "lucide-react";
+import { Event } from "@/lib/events";
 
 interface EventFormProps {
   event?: Event;
-  onSubmit: (event: Event) => void;
+  onSubmit: (event: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'organization_id'>) => void;
   onCancel: () => void;
   loading?: boolean;
 }
 
 export function EventForm({ event, onSubmit, onCancel, loading = false }: EventFormProps) {
-  const [formData, setFormData] = useState<Event>({
+  const [formData, setFormData] = useState({
     title: event?.title || '',
     description: event?.description || '',
     location: event?.location || '',
-    start_date: event?.start_date || new Date().toISOString().split('T')[0],
-    end_date: event?.end_date || new Date().toISOString().split('T')[0],
-    capacity: event?.capacity || 50,
-    registered_count: event?.registered_count || 0,
-    status: event?.status || 'upcoming',
-    event_type: event?.event_type || 'meeting',
-    price: event?.price || 0,
-    currency: event?.currency || 'CLP',
+    start_date: event?.start_date ? new Date(event.start_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    end_date: event?.end_date ? new Date(event.end_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    max_participants: event?.max_participants || 0,
+    status: event?.status || 'draft' as 'draft' | 'published' | 'cancelled',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,7 +30,7 @@ export function EventForm({ event, onSubmit, onCancel, loading = false }: EventF
     onSubmit(formData);
   };
 
-  const handleChange = (field: keyof Event, value: string | number) => {
+  const handleChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -58,9 +40,14 @@ export function EventForm({ event, onSubmit, onCancel, loading = false }: EventF
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <div className="flex items-center space-x-2">
-          <Calendar className="h-5 w-5" />
-          <CardTitle>{event ? 'Editar Evento' : 'Crear Evento'}</CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-5 w-5" />
+            <CardTitle>{event ? 'Editar Evento' : 'Crear Evento'}</CardTitle>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onCancel}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
         <CardDescription>
           {event ? 'Actualiza la información del evento' : 'Crea un nuevo evento para la comunidad'}
@@ -99,7 +86,7 @@ export function EventForm({ event, onSubmit, onCancel, loading = false }: EventF
                 id="location"
                 value={formData.location}
                 onChange={(e) => handleChange('location', e.target.value)}
-                placeholder="Santiago, Chile"
+                placeholder="Centro de Innovación, Santiago"
                 className="pl-10"
                 required
               />
@@ -117,6 +104,7 @@ export function EventForm({ event, onSubmit, onCancel, loading = false }: EventF
                 required
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="end_date">Fecha de Fin</Label>
               <Input
@@ -129,101 +117,54 @@ export function EventForm({ event, onSubmit, onCancel, loading = false }: EventF
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="capacity">Capacidad</Label>
-              <div className="relative">
-                <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="capacity"
-                  type="number"
-                  value={formData.capacity}
-                  onChange={(e) => handleChange('capacity', parseInt(e.target.value) || 0)}
-                  placeholder="50"
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event_type">Tipo de Evento</Label>
-              <Select value={formData.event_type} onValueChange={(value) => handleChange('event_type', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="meeting">Reunión</SelectItem>
-                  <SelectItem value="workshop">Taller</SelectItem>
-                  <SelectItem value="conference">Conferencia</SelectItem>
-                  <SelectItem value="social">Social</SelectItem>
-                  <SelectItem value="training">Capacitación</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="price">Precio</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => handleChange('price', parseFloat(e.target.value) || 0)}
-                  placeholder="0"
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="currency">Moneda</Label>
-              <Select value={formData.currency} onValueChange={(value) => handleChange('currency', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CLP">CLP - Peso Chileno</SelectItem>
-                  <SelectItem value="USD">USD - Dólar</SelectItem>
-                  <SelectItem value="EUR">EUR - Euro</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="space-y-2">
+            <Label htmlFor="max_participants">Máximo de Participantes</Label>
+            <div className="relative">
+              <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="max_participants"
+                type="number"
+                value={formData.max_participants}
+                onChange={(e) => handleChange('max_participants', parseInt(e.target.value) || 0)}
+                placeholder="50"
+                className="pl-10"
+                min="0"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="status">Estado</Label>
-            <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+            <Select
+              value={formData.status}
+              onValueChange={(value) => handleChange('status', value as 'draft' | 'published' | 'cancelled')}
+            >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="upcoming">Próximo</SelectItem>
-                <SelectItem value="ongoing">En Curso</SelectItem>
-                <SelectItem value="completed">Completado</SelectItem>
+                <SelectItem value="draft">Borrador</SelectItem>
+                <SelectItem value="published">Publicado</SelectItem>
                 <SelectItem value="cancelled">Cancelado</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="flex space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onCancel}
-              className="flex-1"
-            >
-              <X className="h-4 w-4 mr-2" />
-              Cancelar
-            </Button>
-            <Button 
-              type="submit" 
+          <div className="flex gap-2 pt-4">
+            <Button
+              type="submit"
               className="flex-1"
               disabled={loading}
             >
-              <Calendar className="h-4 w-4 mr-2" />
               {loading ? 'Guardando...' : (event ? 'Actualizar' : 'Crear')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              Cancelar
             </Button>
           </div>
         </form>

@@ -22,12 +22,22 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
- * Formatea moneda en pesos chilenos
+ * Formatea moneda según la configuración regional
  */
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('es-CL', {
+export function formatCurrency(amount: number, currency: string = 'CLP'): string {
+  const currencyConfigs: Record<string, { locale: string; currency: string }> = {
+    'CLP': { locale: 'es-CL', currency: 'CLP' },
+    'USD': { locale: 'en-US', currency: 'USD' },
+    'EUR': { locale: 'es-ES', currency: 'EUR' },
+    'BRL': { locale: 'pt-BR', currency: 'BRL' },
+    'MXN': { locale: 'es-MX', currency: 'MXN' },
+  };
+
+  const config = currencyConfigs[currency] || currencyConfigs['CLP'];
+  
+  return new Intl.NumberFormat(config.locale, {
     style: 'currency',
-    currency: 'CLP',
+    currency: config.currency,
     minimumFractionDigits: 0
   }).format(amount);
 }

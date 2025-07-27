@@ -1,4 +1,4 @@
-// import { SignIn } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -14,15 +14,18 @@ export default function SignInPage() {
               Inicia sesión en tu cuenta de CommunityOS
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center">
-              <p className="text-gray-600 mb-4">
-                🔧 Configuración temporal - Clerk no está configurado aún
-              </p>
-              <Button className="w-full" asChild>
-                <Link href="/dashboard">Ir al Dashboard</Link>
-              </Button>
-            </div>
+          <CardContent>
+            <SignIn 
+              appearance={{
+                elements: {
+                  formButtonPrimary: "bg-black hover:bg-gray-800 text-white",
+                  card: "shadow-none",
+                  headerTitle: "text-black",
+                  headerSubtitle: "text-gray-600",
+                }
+              }}
+              redirectUrl="/dashboard"
+            />
           </CardContent>
         </Card>
       </div>

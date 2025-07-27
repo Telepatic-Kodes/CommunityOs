@@ -79,11 +79,16 @@ export default function AnalyticsPage() {
               <span className="text-sm text-gray-500">ASECH - Asociación de Emprendedores</span>
             </div>
             <div className="flex items-center space-x-2">
-              <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
-                <option value="7d">Últimos 7 días</option>
-                <option value="30d">Últimos 30 días</option>
-                <option value="90d">Últimos 90 días</option>
-                <option value="1y">Último año</option>
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar período" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7d">Últimos 7 días</SelectItem>
+                  <SelectItem value="30d">Últimos 30 días</SelectItem>
+                  <SelectItem value="90d">Últimos 90 días</SelectItem>
+                  <SelectItem value="1y">Último año</SelectItem>
+                </SelectContent>
               </Select>
               <Button variant="outline">
                 <Download className="h-4 w-4 mr-2" />
