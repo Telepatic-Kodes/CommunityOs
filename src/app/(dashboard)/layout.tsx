@@ -1,6 +1,5 @@
 'use client';
 
-import { UserButton, useUser, useOrganization, useAuth } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -13,13 +12,13 @@ import {
   Settings, 
   Building2,
   Menu,
-  X
+  X,
+  User
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useConfig } from '@/hooks/useConfig';
-import { redirect } from 'next/navigation';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Building2 },
@@ -37,50 +36,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoaded } = useUser();
-  const { organization } = useOrganization();
-  const { isSignedIn } = useAuth();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { config } = useConfig();
-
-  // Redirigir si no está autenticado
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      redirect('/auth/sign-in');
-    }
-  }, [isLoaded, isSignedIn]);
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  if (!isSignedIn) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-center mb-4">Acceso Requerido</h2>
-            <p className="text-gray-600 text-center mb-6">
-              Necesitas iniciar sesión para acceder a esta página.
-            </p>
-            <div className="flex gap-4">
-              <Button className="flex-1" asChild>
-                <Link href="/auth/sign-in">Iniciar Sesión</Link>
-              </Button>
-              <Button variant="outline" className="flex-1" asChild>
-                <Link href="/auth/sign-up">Registrarse</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,10 +59,10 @@ export default function DashboardLayout({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     isActive
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                      : 'text-gray-700 hover:bg-gray-100'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -114,6 +72,17 @@ export default function DashboardLayout({
               );
             })}
           </nav>
+          <div className="border-t p-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Demo User</p>
+                <p className="text-xs text-gray-500">demo@communityos.com</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -130,10 +99,10 @@ export default function DashboardLayout({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     isActive
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                      : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
@@ -142,40 +111,50 @@ export default function DashboardLayout({
               );
             })}
           </nav>
+          <div className="border-t p-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Demo User</p>
+                <p className="text-xs text-gray-500">demo@communityos.com</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Contenido principal */}
       <div className="lg:pl-64">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="flex h-16 items-center justify-between px-4">
-            <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="lg:hidden"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
+        <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/">← Volver al Inicio</Link>
               </Button>
-              <div className="ml-4 lg:ml-0">
-                <h2 className="text-lg font-medium">
-                  {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
-                </h2>
-                {organization && (
-                  <p className="text-sm text-gray-500">{organization.name}</p>
-                )}
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium">Demo User</span>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <UserButton afterSignOutUrl="/" />
-            </div>
           </div>
-        </header>
+        </div>
 
         {/* Contenido de la página */}
-        <main className="p-4">
+        <main className="p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>

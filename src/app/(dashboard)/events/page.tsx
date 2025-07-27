@@ -20,16 +20,9 @@ import {
   Eye
 } from 'lucide-react';
 import { useConfig } from '@/hooks/useConfig';
-import { getEvents, getEventStats } from '@/lib/events';
-import { EventForm } from '@/components/events/EventForm';
-import EventCard from '@/components/events/EventCard';
-
-// ID temporal de organización para testing
-const TEMP_ORG_ID = "temp-org-id";
 
 interface Event {
   id: string;
-  organization_id: string;
   title: string;
   description: string;
   start_date: string;
@@ -41,87 +34,100 @@ interface Event {
   updated_at: string;
 }
 
+// Datos mock para la demo
+const MOCK_EVENTS: Event[] = [
+  {
+    id: '1',
+    title: 'Taller de Marketing Digital',
+    description: 'Aprende las mejores estrategias de marketing digital para tu negocio',
+    start_date: '2024-02-15T10:00:00Z',
+    end_date: '2024-02-15T18:00:00Z',
+    location: 'Santiago, Chile',
+    max_participants: 50,
+    status: 'published',
+    created_at: '2024-01-15T00:00:00Z',
+    updated_at: '2024-01-15T00:00:00Z'
+  },
+  {
+    id: '2',
+    title: 'Networking Empresarial',
+    description: 'Evento de networking para conectar con otros emprendedores',
+    start_date: '2024-02-20T19:00:00Z',
+    end_date: '2024-02-20T22:00:00Z',
+    location: 'Valparaíso, Chile',
+    max_participants: 100,
+    status: 'published',
+    created_at: '2024-01-20T00:00:00Z',
+    updated_at: '2024-01-20T00:00:00Z'
+  },
+  {
+    id: '3',
+    title: 'Conferencia de Tecnología',
+    description: 'Las últimas tendencias en tecnología e innovación',
+    start_date: '2024-03-10T09:00:00Z',
+    end_date: '2024-03-10T17:00:00Z',
+    location: 'Concepción, Chile',
+    max_participants: 200,
+    status: 'draft',
+    created_at: '2024-01-25T00:00:00Z',
+    updated_at: '2024-01-25T00:00:00Z'
+  },
+  {
+    id: '4',
+    title: 'Workshop de Liderazgo',
+    description: 'Desarrolla tus habilidades de liderazgo y gestión de equipos',
+    start_date: '2024-02-28T14:00:00Z',
+    end_date: '2024-02-28T18:00:00Z',
+    location: 'La Serena, Chile',
+    max_participants: 30,
+    status: 'published',
+    created_at: '2024-01-18T00:00:00Z',
+    updated_at: '2024-01-18T00:00:00Z'
+  },
+  {
+    id: '5',
+    title: 'Seminario de Finanzas',
+    description: 'Aprende a gestionar las finanzas de tu empresa',
+    start_date: '2024-01-30T10:00:00Z',
+    end_date: '2024-01-30T16:00:00Z',
+    location: 'Antofagasta, Chile',
+    max_participants: 80,
+    status: 'cancelled',
+    created_at: '2024-01-10T00:00:00Z',
+    updated_at: '2024-01-10T00:00:00Z'
+  }
+];
+
+const MOCK_STATS = {
+  total: 45,
+  draft: 8,
+  published: 32,
+  cancelled: 5,
+  upcoming: 12,
+  past: 33
+};
+
 export default function EventsPage() {
   const { config } = useConfig();
   const [loading, setLoading] = useState(true);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    draft: 0,
-    published: 0,
-    cancelled: 0,
-    upcoming: 0,
-    past: 0
-  });
+  const [events, setEvents] = useState<Event[]>(MOCK_EVENTS);
+  const [stats, setStats] = useState(MOCK_STATS);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
-  // Cargar eventos
+  // Simular carga de datos
   useEffect(() => {
     const loadEvents = async () => {
       try {
         setLoading(true);
-        const [eventsData, statsData] = await Promise.all([
-          getEvents(TEMP_ORG_ID),
-          getEventStats(TEMP_ORG_ID)
-        ]);
-
-        setEvents(eventsData);
-        setStats(statsData);
+        // Simular delay de carga
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setEvents(MOCK_EVENTS);
+        setStats(MOCK_STATS);
       } catch (error) {
         console.error('Error loading events:', error);
-        // Datos de ejemplo para testing
-        setEvents([
-          {
-            id: '1',
-            organization_id: TEMP_ORG_ID,
-            title: 'Taller de Marketing Digital',
-            description: 'Aprende las mejores estrategias de marketing digital para tu negocio',
-            start_date: '2024-02-15T10:00:00Z',
-            end_date: '2024-02-15T18:00:00Z',
-            location: 'Santiago, Chile',
-            max_participants: 50,
-            status: 'published',
-            created_at: '2024-01-15T00:00:00Z',
-            updated_at: '2024-01-15T00:00:00Z'
-          },
-          {
-            id: '2',
-            organization_id: TEMP_ORG_ID,
-            title: 'Networking Empresarial',
-            description: 'Evento de networking para conectar con otros emprendedores',
-            start_date: '2024-02-20T19:00:00Z',
-            end_date: '2024-02-20T22:00:00Z',
-            location: 'Valparaíso, Chile',
-            max_participants: 100,
-            status: 'published',
-            created_at: '2024-01-20T00:00:00Z',
-            updated_at: '2024-01-20T00:00:00Z'
-          },
-          {
-            id: '3',
-            organization_id: TEMP_ORG_ID,
-            title: 'Conferencia de Innovación',
-            description: 'Conferencia sobre las últimas tendencias en innovación tecnológica',
-            start_date: '2024-03-10T09:00:00Z',
-            end_date: '2024-03-10T17:00:00Z',
-            location: 'Concepción, Chile',
-            max_participants: 200,
-            status: 'draft',
-            created_at: '2024-01-25T00:00:00Z',
-            updated_at: '2024-01-25T00:00:00Z'
-          }
-        ]);
-        setStats({
-          total: 3,
-          draft: 1,
-          published: 2,
-          cancelled: 0,
-          upcoming: 2,
-          past: 0
-        });
       } finally {
         setLoading(false);
       }
@@ -131,8 +137,8 @@ export default function EventsPage() {
   }, []);
 
   const handleAddEvent = () => {
-    setEditingEvent(null);
     setShowForm(true);
+    setEditingEvent(null);
   };
 
   const handleEditEvent = (event: Event) => {
@@ -142,12 +148,7 @@ export default function EventsPage() {
 
   const handleDeleteEvent = async (eventId: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este evento?')) {
-      try {
-        // TODO: Implementar eliminación real
-        setEvents(prev => prev.filter(event => event.id !== eventId));
-      } catch (error) {
-        console.error('Error deleting event:', error);
-      }
+      setEvents(events.filter(e => e.id !== eventId));
     }
   };
 
@@ -156,7 +157,7 @@ export default function EventsPage() {
       case 'published':
         return <Badge className="bg-green-100 text-green-800">Publicado</Badge>;
       case 'draft':
-        return <Badge className="bg-gray-100 text-gray-800">Borrador</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">Borrador</Badge>;
       case 'cancelled':
         return <Badge className="bg-red-100 text-red-800">Cancelado</Badge>;
       default:
@@ -164,11 +165,22 @@ export default function EventsPage() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-CL', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+    
     return matchesSearch && matchesStatus;
   });
 
@@ -183,70 +195,75 @@ export default function EventsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Eventos</h1>
-          <p className="text-gray-600">Gestiona los eventos de tu comunidad</p>
+          <h1 className="text-2xl font-bold">Gestión de Eventos</h1>
+          <p className="text-gray-600">Administra los eventos de tu comunidad</p>
         </div>
-        <Button onClick={handleAddEvent} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Evento
+        <Button onClick={handleAddEvent} className="mt-4 sm:mt-0">
+          <Plus className="h-4 w-4 mr-2" />
+          Crear Evento
         </Button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Eventos</CardTitle>
-            <Calendar className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Publicados</CardTitle>
-            <Eye className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.published}</div>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Eye className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Publicados</p>
+                <p className="text-2xl font-bold">{stats.published}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Próximos</CardTitle>
-            <Clock className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.upcoming}</div>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-yellow-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Próximos</p>
+                <p className="text-2xl font-bold">{stats.upcoming}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Borradores</CardTitle>
-            <Edit className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{stats.draft}</div>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Borradores</p>
+                <p className="text-2xl font-bold">{stats.draft}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Buscar eventos..."
                   value={searchTerm}
@@ -255,118 +272,92 @@ export default function EventsPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-2">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">Todos los estados</option>
-                <option value="published">Publicados</option>
-                <option value="draft">Borradores</option>
-                <option value="cancelled">Cancelados</option>
-              </select>
-            </div>
+            
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="published">Publicado</option>
+              <option value="draft">Borrador</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
           </div>
         </CardContent>
       </Card>
 
       {/* Events List */}
-      <div className="grid gap-6">
-        {filteredEvents.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Calendar className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay eventos</h3>
-              <p className="text-gray-600 text-center mb-4">
-                {searchTerm || statusFilter !== 'all' 
-                  ? 'No se encontraron eventos con los filtros aplicados'
-                  : 'Comienza creando tu primer evento'
-                }
-              </p>
-              {!searchTerm && statusFilter === 'all' && (
-                <Button onClick={handleAddEvent}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Crear Evento
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          filteredEvents.map((event) => (
-            <Card key={event.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CardTitle className="text-xl">{event.title}</CardTitle>
-                      {getStatusBadge(event.status)}
-                    </div>
-                    <CardDescription className="text-base">
-                      {event.description}
-                    </CardDescription>
+      <Card>
+        <CardHeader>
+          <CardTitle>Eventos ({filteredEvents.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredEvents.map((event) => (
+              <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-blue-600" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleEditEvent(event)}>
+                  <div>
+                    <h3 className="font-medium">{event.title}</h3>
+                    <p className="text-sm text-gray-500">{event.description}</p>
+                    <div className="flex items-center space-x-4 mt-1">
+                      <div className="flex items-center space-x-1">
+                        <MapPin className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-500">{event.location}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-500">{formatDate(event.start_date)}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Users className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-500">{event.max_participants} participantes</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  {getStatusBadge(event.status)}
+                  
+                  <div className="flex space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditEvent(event)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDeleteEvent(event.id)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteEvent(event.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span>
-                      {new Date(event.start_date).toLocaleDateString('es-CL', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <span>{event.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-500" />
-                    <span>Máx. {event.max_participants} participantes</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Event Form Modal */}
-      {showForm && (
-        <EventForm
-          event={editingEvent}
-          onClose={() => {
-            setShowForm(false);
-            setEditingEvent(null);
-          }}
-          onSave={(savedEvent) => {
-            if (editingEvent) {
-              setEvents(prev => prev.map(event => 
-                event.id === editingEvent.id ? savedEvent : event
-              ));
-            } else {
-              setEvents(prev => [savedEvent, ...prev]);
-            }
-            setShowForm(false);
-            setEditingEvent(null);
-          }}
-        />
-      )}
+      {/* Demo Notice */}
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardContent className="pt-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 text-yellow-600">⚠️</div>
+            <p className="text-sm text-yellow-800">
+              <strong>Demo Mode:</strong> Esta es una versión de demostración con datos simulados. 
+              En producción, estos datos vendrían de la base de datos real.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 

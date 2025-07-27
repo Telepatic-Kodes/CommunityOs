@@ -21,12 +21,6 @@ import {
   Trash2
 } from 'lucide-react';
 import { useConfig } from '@/hooks/useConfig';
-import { getMembers, getMemberStats } from '@/lib/members';
-import MemberForm from '@/components/members/MemberForm';
-import MemberCard from '@/components/members/MemberCard';
-
-// ID temporal de organización para testing
-const TEMP_ORG_ID = "temp-org-id";
 
 interface Member {
   id: string;
@@ -40,82 +34,108 @@ interface Member {
   lastActive?: string;
 }
 
+// Datos mock para la demo
+const MOCK_MEMBERS: Member[] = [
+  {
+    id: '1',
+    firstName: 'Juan',
+    lastName: 'Pérez',
+    email: 'juan.perez@email.com',
+    phone: '+56 9 1234 5678',
+    role: 'admin',
+    status: 'active',
+    joinedAt: '2024-01-15',
+    lastActive: '2024-01-20'
+  },
+  {
+    id: '2',
+    firstName: 'María',
+    lastName: 'González',
+    email: 'maria.gonzalez@email.com',
+    phone: '+56 9 8765 4321',
+    role: 'member',
+    status: 'active',
+    joinedAt: '2024-01-10',
+    lastActive: '2024-01-19'
+  },
+  {
+    id: '3',
+    firstName: 'Carlos',
+    lastName: 'Rodríguez',
+    email: 'carlos.rodriguez@email.com',
+    phone: '+56 9 5555 1234',
+    role: 'member',
+    status: 'pending',
+    joinedAt: '2024-01-18',
+    lastActive: '2024-01-18'
+  },
+  {
+    id: '4',
+    firstName: 'Ana',
+    lastName: 'Silva',
+    email: 'ana.silva@email.com',
+    phone: '+56 9 9876 5432',
+    role: 'viewer',
+    status: 'active',
+    joinedAt: '2024-01-05',
+    lastActive: '2024-01-17'
+  },
+  {
+    id: '5',
+    firstName: 'Roberto',
+    lastName: 'Martínez',
+    email: 'roberto.martinez@email.com',
+    phone: '+56 9 1111 2222',
+    role: 'member',
+    status: 'inactive',
+    joinedAt: '2023-12-20',
+    lastActive: '2024-01-10'
+  },
+  {
+    id: '6',
+    firstName: 'Patricia',
+    lastName: 'López',
+    email: 'patricia.lopez@email.com',
+    phone: '+56 9 3333 4444',
+    role: 'admin',
+    status: 'active',
+    joinedAt: '2024-01-12',
+    lastActive: '2024-01-20'
+  }
+];
+
+const MOCK_STATS = {
+  total: 1247,
+  active: 1189,
+  pending: 23,
+  inactive: 35,
+  admins: 12,
+  members: 1156,
+  viewers: 79
+};
+
 export default function MembersPage() {
   const { config } = useConfig();
   const [loading, setLoading] = useState(true);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    pending: 0,
-    inactive: 0,
-    admins: 0,
-    members: 0,
-    viewers: 0
-  });
+  const [members, setMembers] = useState<Member[]>(MOCK_MEMBERS);
+  const [stats, setStats] = useState(MOCK_STATS);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
 
-  // Cargar miembros
+  // Simular carga de datos
   useEffect(() => {
     const loadMembers = async () => {
       try {
         setLoading(true);
-        const [membersData, statsData] = await Promise.all([
-          getMembers(TEMP_ORG_ID),
-          getMemberStats(TEMP_ORG_ID)
-        ]);
-
-        setMembers(membersData);
-        setStats(statsData);
+        // Simular delay de carga
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setMembers(MOCK_MEMBERS);
+        setStats(MOCK_STATS);
       } catch (error) {
         console.error('Error loading members:', error);
-        // Datos de ejemplo para testing
-        setMembers([
-          {
-            id: '1',
-            firstName: 'Juan',
-            lastName: 'Pérez',
-            email: 'juan.perez@email.com',
-            phone: '+56 9 1234 5678',
-            role: 'admin',
-            status: 'active',
-            joinedAt: '2024-01-15',
-            lastActive: '2024-01-20'
-          },
-          {
-            id: '2',
-            firstName: 'María',
-            lastName: 'González',
-            email: 'maria.gonzalez@email.com',
-            phone: '+56 9 8765 4321',
-            role: 'member',
-            status: 'active',
-            joinedAt: '2024-01-10',
-            lastActive: '2024-01-19'
-          },
-          {
-            id: '3',
-            firstName: 'Carlos',
-            lastName: 'Rodríguez',
-            email: 'carlos.rodriguez@email.com',
-            role: 'member',
-            status: 'pending',
-            joinedAt: '2024-01-18'
-          }
-        ]);
-        setStats({
-          total: 3,
-          active: 2,
-          pending: 1,
-          inactive: 0,
-          admins: 1,
-          members: 2,
-          viewers: 0
-        });
       } finally {
         setLoading(false);
       }
@@ -124,22 +144,9 @@ export default function MembersPage() {
     loadMembers();
   }, []);
 
-  // Filtrar miembros
-  const filteredMembers = members.filter(member => {
-    const matchesSearch = 
-      member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
-    const matchesRole = roleFilter === 'all' || member.role === roleFilter;
-
-    return matchesSearch && matchesStatus && matchesRole;
-  });
-
   const handleAddMember = () => {
-    setEditingMember(null);
     setShowForm(true);
+    setEditingMember(null);
   };
 
   const handleEditMember = (member: Member) => {
@@ -149,7 +156,6 @@ export default function MembersPage() {
 
   const handleDeleteMember = async (memberId: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este miembro?')) {
-      // Aquí iría la lógica para eliminar el miembro
       setMembers(members.filter(m => m.id !== memberId));
     }
   };
@@ -180,6 +186,16 @@ export default function MembersPage() {
     }
   };
 
+  const filteredMembers = members.filter(member => {
+    const matchesSearch = member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
+    const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+    
+    return matchesSearch && matchesStatus && matchesRole;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -191,110 +207,105 @@ export default function MembersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Miembros</h1>
-          <p className="text-gray-600">Gestiona los miembros de tu comunidad</p>
+          <h1 className="text-2xl font-bold">Gestión de Miembros</h1>
+          <p className="text-gray-600">Administra los miembros de tu comunidad</p>
         </div>
-        <Button onClick={handleAddMember}>
+        <Button onClick={handleAddMember} className="mt-4 sm:mt-0">
           <Plus className="h-4 w-4 mr-2" />
           Agregar Miembro
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Miembros</CardTitle>
-            <Users className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-gray-600">Miembros registrados</p>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total</p>
+                <p className="text-2xl font-bold">{stats.total.toLocaleString()}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Activos</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <p className="text-xs text-gray-600">Miembros activos</p>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <UserCheck className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Activos</p>
+                <p className="text-2xl font-bold">{stats.active.toLocaleString()}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-            <Calendar className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-            <p className="text-xs text-gray-600">Aprobación pendiente</p>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <UserX className="h-5 w-5 text-yellow-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pendientes</p>
+                <p className="text-2xl font-bold">{stats.pending}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Admins</CardTitle>
-            <Users className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.admins}</div>
-            <p className="text-xs text-gray-600">Administradores</p>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Admins</p>
+                <p className="text-2xl font-bold">{stats.admins}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters and Search */}
+      {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filtros y Búsqueda</CardTitle>
-          <CardDescription>
-            Encuentra miembros específicos usando los filtros
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar miembros..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar miembros..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
             
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Todos los estados</option>
-              <option value="active">Activos</option>
-              <option value="pending">Pendientes</option>
-              <option value="inactive">Inactivos</option>
+              <option value="active">Activo</option>
+              <option value="pending">Pendiente</option>
+              <option value="inactive">Inactivo</option>
             </select>
-
+            
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Todos los roles</option>
-              <option value="admin">Administradores</option>
-              <option value="member">Miembros</option>
-              <option value="viewer">Viewers</option>
+              <option value="admin">Admin</option>
+              <option value="member">Miembro</option>
+              <option value="viewer">Viewer</option>
             </select>
-
-            <Button variant="outline" className="flex items-center">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -302,102 +313,64 @@ export default function MembersPage() {
       {/* Members List */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Miembros ({filteredMembers.length})</CardTitle>
-          <CardDescription>
-            Gestiona los miembros de tu organización
-          </CardDescription>
+          <CardTitle>Miembros ({filteredMembers.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredMembers.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron miembros</h3>
-              <p className="text-gray-600 mb-4">
-                {searchTerm || statusFilter !== 'all' || roleFilter !== 'all' 
-                  ? 'Intenta ajustar los filtros de búsqueda'
-                  : 'Comienza agregando tu primer miembro'
-                }
-              </p>
-              {!searchTerm && statusFilter === 'all' && roleFilter === 'all' && (
-                <Button onClick={handleAddMember}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Miembro
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600">
-                        {member.firstName[0]}{member.lastName[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">
-                        {member.firstName} {member.lastName}
-                      </h3>
-                      <p className="text-sm text-gray-600">{member.email}</p>
-                      {member.phone && (
-                        <p className="text-sm text-gray-500">{member.phone}</p>
-                      )}
-                    </div>
+          <div className="space-y-4">
+            {filteredMembers.map((member) => (
+              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Users className="h-5 w-5 text-blue-600" />
                   </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    {getStatusBadge(member.status)}
-                    {getRoleBadge(member.role)}
-                    
-                    <div className="flex items-center space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditMember(member)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteMember(member.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <div>
+                    <h3 className="font-medium">{member.firstName} {member.lastName}</h3>
+                    <p className="text-sm text-gray-500">{member.email}</p>
+                    {member.phone && (
+                      <p className="text-sm text-gray-500">{member.phone}</p>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+                
+                <div className="flex items-center space-x-2">
+                  {getStatusBadge(member.status)}
+                  {getRoleBadge(member.role)}
+                  
+                  <div className="flex space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditMember(member)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteMember(member.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Member Form Modal */}
-      {showForm && (
-        <MemberForm
-          member={editingMember}
-          onClose={() => {
-            setShowForm(false);
-            setEditingMember(null);
-          }}
-          onSave={(member) => {
-            if (editingMember) {
-              // Actualizar miembro existente
-              setMembers(members.map(m => m.id === member.id ? member : m));
-            } else {
-              // Agregar nuevo miembro
-              setMembers([...members, { ...member, id: Date.now().toString() }]);
-            }
-            setShowForm(false);
-            setEditingMember(null);
-          }}
-        />
-      )}
+      {/* Demo Notice */}
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardContent className="pt-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 text-yellow-600">⚠️</div>
+            <p className="text-sm text-yellow-800">
+              <strong>Demo Mode:</strong> Esta es una versión de demostración con datos simulados. 
+              En producción, estos datos vendrían de la base de datos real.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 

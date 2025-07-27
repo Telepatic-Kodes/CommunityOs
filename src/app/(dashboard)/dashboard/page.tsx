@@ -1,297 +1,300 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Users, TrendingUp, DollarSign, Calendar, Activity, Vote, Bell, AlertTriangle, CheckCircle } from 'lucide-react';
+import { 
+  Users, 
+  DollarSign, 
+  Calendar, 
+  Vote, 
+  TrendingUp, 
+  Activity,
+  ArrowUpRight,
+  ArrowDownRight,
+  BarChart3,
+  Bell,
+  Target
+} from 'lucide-react';
 import Link from 'next/link';
 import { useConfig } from '@/hooks/useConfig';
-import { getMembers, getMemberStats } from '@/lib/members';
-import { getEvents, getEventStats } from '@/lib/events';
-import { getPaymentStats } from '@/lib/payments';
-import { getVotingStats } from '@/lib/voting';
+import KPICard from '@/components/ui/KPICard';
+import InitiativeCard from '@/components/initiatives/InitiativeCard';
 
-// ID temporal de organización para testing
-const TEMP_ORG_ID = "temp-org-id";
-
-export default function DashboardPage() {
+export default function Dashboard() {
   const { config } = useConfig();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    members: { total: 0, active: 0, pending: 0, inactive: 0, admins: 0, members: 0, viewers: 0 },
-    events: { total: 0, draft: 0, published: 0, cancelled: 0, upcoming: 0, past: 0 },
-    payments: { totalRevenue: 0, pendingAmount: 0, overdueAmount: 0, totalPayments: 0, completedPayments: 0, pendingPayments: 0, failedPayments: 0 },
-    voting: { total: 0, active: 0, closed: 0, draft: 0, cancelled: 0, upcoming: 0, averageParticipation: 0 }
-  });
 
-  // Cargar estadísticas
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        setLoading(true);
-        const [memberStats, eventStats, paymentStats, votingStats] = await Promise.all([
-          getMemberStats(TEMP_ORG_ID),
-          getEventStats(TEMP_ORG_ID),
-          getPaymentStats(TEMP_ORG_ID),
-          getVotingStats(TEMP_ORG_ID)
-        ]);
+  // Datos simulados para KPIs
+  const kpiData = {
+    members: {
+      total: 1247,
+      growth: 12.5,
+      active: 1189,
+      newThisMonth: 89
+    },
+    revenue: {
+      total: 45000000,
+      growth: 8.7,
+      monthly: 3750000
+    },
+    events: {
+      total: 45,
+      attendance: 78.2,
+      upcoming: 8
+    },
+    engagement: {
+      participation: 78.4,
+      growth: 15.2
+    },
+    voting: {
+      total: 12,
+      participation: 82.3
+    },
+    communications: {
+      sent: 156,
+      openRate: 87.3
+    }
+  };
 
-        setStats({
-          members: memberStats,
-          events: eventStats,
-          payments: paymentStats,
-          voting: votingStats
-        });
-      } catch (error) {
-        console.error('Error loading dashboard stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadStats();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
+  // Datos simulados de iniciativas destacadas
+  const keyInitiatives = [
+    {
+      id: '1',
+      title: 'Expansión de Membresía Digital',
+      description: 'Implementar sistema de membresía digital para aumentar la base de miembros en un 25%',
+      status: 'in-progress' as const,
+      priority: 'high' as const,
+      progress: 65,
+      startDate: '2024-01-15',
+      endDate: '2024-06-30',
+      budget: 50000000,
+      actualSpent: 32500000,
+      teamMembers: ['Ana García', 'Carlos López', 'María Rodríguez'],
+      leader: 'Ana García',
+    },
+    {
+      id: '3',
+      title: 'Programa de Liderazgo Comunitario',
+      description: 'Desarrollar programa de formación para líderes emergentes de la comunidad',
+      status: 'planning' as const,
+      priority: 'high' as const,
+      progress: 15,
+      startDate: '2024-04-01',
+      endDate: '2024-12-31',
+      budget: 35000000,
+      actualSpent: 5000000,
+      teamMembers: ['Carmen Vargas', 'Diego Morales', 'Patricia Ruiz'],
+      leader: 'Carmen Vargas',
+    },
+    {
+      id: '4',
+      title: 'Actualización de Infraestructura Tecnológica',
+      description: 'Modernizar sistemas tecnológicos para mejorar eficiencia y seguridad',
+      status: 'on-hold' as const,
+      priority: 'critical' as const,
+      progress: 30,
+      startDate: '2024-02-01',
+      endDate: '2024-08-31',
+      budget: 75000000,
+      actualSpent: 22500000,
+      teamMembers: ['Jorge Hernández', 'Sofia Torres'],
+      leader: 'Jorge Hernández',
+    }
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Miembros</CardTitle>
-            <Users className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.members.total.toLocaleString()}</div>
-            <p className="text-xs text-green-600">+12% desde el mes pasado</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ingresos Mensuales</CardTitle>
-            <DollarSign className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('es-CL', {
-                style: 'currency',
-                currency: config.modules.payments.currency,
-                minimumFractionDigits: 0
-              }).format(stats.payments.totalRevenue)}
-            </div>
-            <p className="text-xs text-green-600">{stats.payments.totalPayments > 0 ? Math.round((stats.payments.completedPayments / stats.payments.totalPayments) * 100) : 0}% tasa de éxito</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Eventos Activos</CardTitle>
-            <Calendar className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.events.published}</div>
-            <p className="text-xs text-blue-600">{stats.events.upcoming} próximos</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Votaciones Activas</CardTitle>
-            <Vote className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.voting.active}</div>
-            <p className="text-xs text-purple-600">{stats.voting.averageParticipation}% participación</p>
-          </CardContent>
-        </Card>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Dashboard - {config.organization.name}
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Resumen ejecutivo y métricas clave de la organización
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" asChild>
+            <Link href="/report">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Reporte Completo
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/analytics">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Ver Analytics
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+      {/* KPIs Principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <KPICard
+          title="Miembros Activos"
+          value={kpiData.members.total}
+          description={`${kpiData.members.active} activos este mes`}
+          icon={Users}
+          trend={{ value: kpiData.members.growth, isPositive: true }}
+          color="blue"
+          format="number"
+        />
+        
+        <KPICard
+          title="Ingresos Totales"
+          value={kpiData.revenue.total}
+          description={`${kpiData.revenue.monthly.toLocaleString()} este mes`}
+          icon={DollarSign}
+          trend={{ value: kpiData.revenue.growth, isPositive: true }}
+          color="green"
+          format="currency"
+        />
+        
+        <KPICard
+          title="Participación"
+          value={kpiData.engagement.participation}
+          description="Tasa de participación general"
+          icon={Activity}
+          trend={{ value: kpiData.engagement.growth, isPositive: true }}
+          color="purple"
+          format="percentage"
+        />
+        
+        <KPICard
+          title="Eventos Organizados"
+          value={kpiData.events.total}
+          description={`${kpiData.events.upcoming} próximos eventos`}
+          icon={Calendar}
+          trend={{ value: 23.5, isPositive: true }}
+          color="orange"
+          format="number"
+        />
+      </div>
+
+      {/* Iniciativas Destacadas */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+            <Target className="h-5 w-5 mr-2" />
+            Iniciativas Destacadas
+          </h2>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/initiatives">
+              Ver Todas las Iniciativas
+            </Link>
+          </Button>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          {keyInitiatives.map((initiative) => (
+            <InitiativeCard
+              key={initiative.id}
+              {...initiative}
+              compact={true}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Métricas Detalladas */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Gestión de Miembros */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <Users className="h-5 w-5 mr-2" />
-              Gestionar Miembros
+              Gestión de Miembros
             </CardTitle>
             <CardDescription>
-              Agregar, editar y gestionar perfiles de miembros
+              Estadísticas de crecimiento y retención
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-600">Miembros activos</span>
-              <Badge variant="outline">{stats.members.active}</Badge>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Total de Miembros</span>
+                <span className="font-semibold">{kpiData.members.total.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Miembros Activos</span>
+                <span className="font-semibold text-green-600">{kpiData.members.active.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Nuevos este mes</span>
+                <span className="font-semibold text-blue-600">+{kpiData.members.newThisMonth}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Crecimiento anual</span>
+                <span className="font-semibold text-purple-600 flex items-center">
+                  <ArrowUpRight className="h-4 w-4 mr-1" />
+                  +{kpiData.members.growth}%
+                </span>
+              </div>
             </div>
-            <Button className="w-full" size="sm" asChild>
-              <Link href="/members">Ver Miembros</Link>
-            </Button>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="h-5 w-5 mr-2" />
-              Gestionar Eventos
-            </CardTitle>
-            <CardDescription>
-              Crear y gestionar eventos de la comunidad
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-600">Eventos próximos</span>
-              <Badge variant="outline">{stats.events.upcoming}</Badge>
-            </div>
-            <Button className="w-full" size="sm" asChild>
-              <Link href="/events">Ver Eventos</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <DollarSign className="h-5 w-5 mr-2" />
-              Gestión de Pagos
-            </CardTitle>
-            <CardDescription>
-              Monitorear pagos y membresías
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-600">Pendientes</span>
-              <Badge variant="outline" className={stats.payments.pendingAmount > 0 ? 'bg-yellow-100 text-yellow-800' : ''}>
-                {new Intl.NumberFormat('es-CL', {
-                  style: 'currency',
-                  currency: config.modules.payments.currency,
-                  minimumFractionDigits: 0
-                }).format(stats.payments.pendingAmount)}
-              </Badge>
-            </div>
-            <Button className="w-full" size="sm" asChild>
-              <Link href="/payments">Ver Pagos</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Vote className="h-5 w-5 mr-2" />
-              Sistema de Votaciones
-            </CardTitle>
-            <CardDescription>
-              Gestionar votaciones y elecciones
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-600">Votaciones activas</span>
-              <Badge variant="outline" className={stats.voting.active > 0 ? 'bg-green-100 text-green-800' : ''}>
-                {stats.voting.active}
-              </Badge>
-            </div>
-            <Button className="w-full" size="sm" asChild>
-              <Link href="/voting">Ver Votaciones</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="h-5 w-5 mr-2" />
-              Analytics
-            </CardTitle>
-            <CardDescription>
-              Ver métricas y reportes detallados
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-600">Reportes disponibles</span>
-              <Badge variant="outline">4</Badge>
-            </div>
-            <Button className="w-full" size="sm" asChild>
-              <Link href="/analytics">Ver Analytics</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Bell className="h-5 w-5 mr-2" />
-              Notificaciones
-            </CardTitle>
-            <CardDescription>
-              Gestionar comunicaciones y alertas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-600">Pendientes</span>
-              <Badge variant="outline" className="bg-red-100 text-red-800">3</Badge>
-            </div>
-            <Button className="w-full" size="sm" asChild>
-              <Link href="/notifications">Ver Notificaciones</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activity & Alerts */}
-      <div className="grid md:grid-cols-2 gap-6">
+        {/* Actividad Reciente */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <Activity className="h-5 w-5 mr-2" />
               Actividad Reciente
             </CardTitle>
+            <CardDescription>
+              Eventos y actividades de la semana
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Nuevo miembro registrado</p>
-                  <p className="text-xs text-gray-500">Hace 2 horas</p>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Eventos realizados</span>
+                <span className="font-semibold">{kpiData.events.total}</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Evento creado: Taller de Marketing</p>
-                  <p className="text-xs text-gray-500">Hace 4 horas</p>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Tasa de asistencia</span>
+                <span className="font-semibold text-green-600">{kpiData.events.attendance}%</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Votación iniciada: Elección de Presidente</p>
-                  <p className="text-xs text-gray-500">Hace 6 horas</p>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Votaciones realizadas</span>
+                <span className="font-semibold text-blue-600">{kpiData.voting.total}</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Pago procesado exitosamente</p>
-                  <p className="text-xs text-gray-500">Hace 8 horas</p>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Participación votaciones</span>
+                <span className="font-semibold text-purple-600">{kpiData.voting.participation}%</span>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Acciones Rápidas */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Calendar className="h-5 w-5 mr-2" />
+              Próximos Eventos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Asamblea General</span>
+                <span className="text-xs text-gray-500">15 Dic</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Workshop Tecnología</span>
+                <span className="text-xs text-gray-500">20 Dic</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Networking Anual</span>
+                <span className="text-xs text-gray-500">28 Dic</span>
+              </div>
+              <Button variant="outline" size="sm" className="w-full mt-3">
+                Ver Todos los Eventos
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -299,59 +302,103 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              Alertas y Recordatorios
+              <Vote className="h-5 w-5 mr-2" />
+              Votaciones Activas
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {stats.payments.overdueAmount > 0 && (
-                <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-red-800">Pagos vencidos</p>
-                    <p className="text-xs text-red-600">
-                      {new Intl.NumberFormat('es-CL', {
-                        style: 'currency',
-                        currency: config.modules.payments.currency,
-                        minimumFractionDigits: 0
-                      }).format(stats.payments.overdueAmount)} por cobrar
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {stats.events.upcoming > 0 && (
-                <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                  <Calendar className="h-4 w-4 text-blue-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-800">Eventos próximos</p>
-                    <p className="text-xs text-blue-600">{stats.events.upcoming} eventos en los próximos 7 días</p>
-                  </div>
-                </div>
-              )}
-
-              {stats.voting.active > 0 && (
-                <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
-                  <Vote className="h-4 w-4 text-purple-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-purple-800">Votaciones activas</p>
-                    <p className="text-xs text-purple-600">{stats.voting.active} votaciones en curso</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-green-800">Sistema funcionando correctamente</p>
-                  <p className="text-xs text-green-600">Todos los módulos operativos</p>
-                </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Nuevo Presidente</span>
+                <span className="text-xs text-green-600">Activa</span>
               </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Cambio de Estatutos</span>
+                <span className="text-xs text-green-600">Activa</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Presupuesto 2025</span>
+                <span className="text-xs text-gray-500">Cerrada</span>
+              </div>
+              <Button variant="outline" size="sm" className="w-full mt-3">
+                Participar en Votaciones
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Bell className="h-5 w-5 mr-2" />
+              Notificaciones
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Nuevo miembro registrado</span>
+                <span className="text-xs text-gray-500">2h</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Pago recibido</span>
+                <span className="text-xs text-gray-500">4h</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Evento confirmado</span>
+                <span className="text-xs text-gray-500">1d</span>
+              </div>
+              <Button variant="outline" size="sm" className="w-full mt-3">
+                Ver Todas las Notificaciones
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Enlaces Rápidos */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Acceso Rápido</CardTitle>
+          <CardDescription>
+            Navega rápidamente a las funciones más utilizadas
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Button variant="outline" asChild className="h-auto p-4 flex flex-col">
+              <Link href="/members">
+                <Users className="h-6 w-6 mb-2" />
+                <span className="text-sm">Miembros</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto p-4 flex flex-col">
+              <Link href="/events">
+                <Calendar className="h-6 w-6 mb-2" />
+                <span className="text-sm">Eventos</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto p-4 flex flex-col">
+              <Link href="/payments">
+                <DollarSign className="h-6 w-6 mb-2" />
+                <span className="text-sm">Pagos</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto p-4 flex flex-col">
+              <Link href="/voting">
+                <Vote className="h-6 w-6 mb-2" />
+                <span className="text-sm">Votaciones</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto p-4 flex flex-col">
+              <Link href="/initiatives">
+                <Target className="h-6 w-6 mb-2" />
+                <span className="text-sm">Iniciativas</span>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 
