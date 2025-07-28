@@ -1,19 +1,30 @@
 'use client';
 
-import React from 'react';
-import { ConfigManager, defaultConfig, type CommunityConfig, type FeaturesConfig, type ModulesConfig } from '@/lib/config';
+import { useState, useEffect } from 'react';
+import { configManager, type CommunityConfig } from '@/lib/config';
 
-/**
- * Hook para usar la configuración de la aplicación
- */
-export function useConfig(organizationId?: string) {
-  const [config, setConfig] = React.useState<CommunityConfig>(defaultConfig);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+interface UseConfigReturn {
+  config: CommunityConfig;
+  loading: boolean;
+  error: string | null;
+  isFeatureEnabled: (feature: keyof CommunityConfig['features']) => boolean;
+  isModuleEnabled: (module: keyof CommunityConfig['modules']) => boolean;
+  updateConfig: (updates: Partial<CommunityConfig>) => Promise<void>;
+}
 
-  const configManager = ConfigManager.getInstance();
+export function useConfig(organizationId: string = 'default'): UseConfigReturn {
+  const [config, setConfig] = useState<CommunityConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const loadConfig = async () => {
       try {
         setLoading(true);
@@ -21,41 +32,75 @@ export function useConfig(organizationId?: string) {
         const loadedConfig = await configManager.getConfig(organizationId);
         setConfig(loadedConfig);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error al cargar configuración');
+        console.error('Error loading config:', err);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setLoading(false);
       }
     };
 
     loadConfig();
-  }, [organizationId]);
+  }, [organizationId, mounted]);
 
-  const updateConfigAsync = React.useCallback(async (updates: Partial<CommunityConfig>) => {
+  const isFeatureEnabled = (feature: keyof CommunityConfig['features']): boolean => {
+    if (!config) return false;
+    return config.features[feature] ?? false;
+  };
+
+  const isModuleEnabled = (module: keyof CommunityConfig['modules']): boolean => {
+    if (!config) return false;
+    return config.modules[module]?.enabled ?? false;
+  };
+
+  const updateConfig = async (updates: Partial<CommunityConfig>): Promise<void> => {
+    if (!config) return;
+    
     try {
-      setError(null);
-      await configManager.updateConfig(organizationId || 'default', updates);
+      await configManager.updateConfig(organizationId, updates);
       const updatedConfig = await configManager.getConfig(organizationId);
       setConfig(updatedConfig);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar configuración');
+      console.error('Error updating config:', err);
       throw err;
     }
-  }, [organizationId, configManager]);
+  };
 
-  const isFeatureEnabled = React.useCallback((feature: keyof FeaturesConfig): boolean => {
-    return config.features[feature];
-  }, [config.features]);
-
-  const isModuleEnabled = React.useCallback((module: keyof ModulesConfig): boolean => {
-    return config.modules[module].enabled;
-  }, [config.modules]);
+  // Retornar configuración por defecto si no está montado
+  if (!mounted) {
+    return {
+      config: {
+        organization: { name: '', shortName: '', description: '', email: '' },
+        branding: { primaryColor: '#000000', secondaryColor: '#000000', theme: 'auto', fontFamily: 'Inter' },
+        features: { events: false, members: false, payments: false, voting: false, analytics: false, notifications: false, portal: false, settings: false },
+        modules: {
+          events: { enabled: false, maxEvents: 0, allowRecurring: false, requireApproval: false },
+          members: { enabled: false, maxMembers: 0, allowSelfRegistration: false, requireApproval: false, roles: [] },
+          payments: { enabled: false, currency: 'USD', allowMultiplePlans: false, requirePayment: false, providers: [] },
+          voting: { enabled: false, allowMultipleVotes: false, requireAuthentication: false, methods: [] },
+          analytics: { enabled: false, trackEvents: false, trackMembers: false, trackPayments: false, privacyMode: false },
+          notifications: { enabled: false, email: false, push: false, sms: false, channels: [] }
+        },
+        communication: { emailTemplates: { welcome: '', eventReminder: '', paymentConfirmation: '', votingReminder: '' }, notifications: { enabled: false, frequency: 'immediate', channels: [] } },
+        security: { authentication: { requireEmailVerification: false, requirePhoneVerification: false, allowSocialLogin: false, sessionTimeout: 0 }, dataProtection: { encryptPersonalData: false, anonymizeAnalytics: false, gdprCompliance: false, dataRetentionDays: 0 } },
+        integrations: { stripe: { enabled: false }, sendgrid: { enabled: false }, google: { enabled: false } },
+        regional: { locale: 'es-ES', timezone: 'UTC', currency: 'USD', dateFormat: 'DD/MM/YYYY', numberFormat: { decimal: ',', thousands: '.' } },
+        support: { contact: {}, help: { enabled: false } },
+        legal: { gdpr: { enabled: false, consentRequired: false, dataProcessingBasis: 'consent' } }
+      },
+      loading: true,
+      error: null,
+      isFeatureEnabled: () => false,
+      isModuleEnabled: () => false,
+      updateConfig: async () => {}
+    };
+  }
 
   return {
-    config,
+    config: config!,
     loading,
     error,
-    updateConfig: updateConfigAsync,
     isFeatureEnabled,
     isModuleEnabled,
+    updateConfig
   };
 } 

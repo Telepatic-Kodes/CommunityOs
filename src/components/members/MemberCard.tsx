@@ -1,19 +1,20 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { 
   User, 
   Mail, 
   Phone, 
   Calendar, 
+  MapPin, 
   Edit, 
   Trash2, 
-  MoreHorizontal,
-  UserCheck,
-  UserX
+  Eye,
+  MoreHorizontal
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Member {
   id: string;
@@ -25,140 +26,173 @@ interface Member {
   status: 'active' | 'inactive' | 'pending';
   joinedAt: string;
   lastActive?: string;
+  location?: string;
+  avatar?: string;
 }
 
 interface MemberCardProps {
   member: Member;
-  onEdit: (member: Member) => void;
-  onDelete: (memberId: string) => void;
+  onEdit?: (member: Member) => void;
+  onDelete?: (memberId: string) => void;
+  onView?: (member: Member) => void;
 }
 
-export default function MemberCard({ member, onEdit, onDelete }: MemberCardProps) {
+export default function MemberCard({ member, onEdit, onDelete, onView }: MemberCardProps) {
+  const [showActions, setShowActions] = useState(false);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800">Activo</Badge>;
+        return <Badge variant="success" className="text-sm">Activo</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800">Pendiente</Badge>;
+        return <Badge variant="warning" className="text-sm">Pendiente</Badge>;
       case 'inactive':
-        return <Badge className="bg-red-100 text-red-800">Inactivo</Badge>;
+        return <Badge variant="destructive" className="text-sm">Inactivo</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className="text-sm">{status}</Badge>;
     }
   };
 
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
-        return <Badge className="bg-purple-100 text-purple-800">Admin</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800 text-sm">Admin</Badge>;
       case 'member':
-        return <Badge className="bg-blue-100 text-blue-800">Miembro</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 text-sm">Miembro</Badge>;
       case 'viewer':
-        return <Badge className="bg-gray-100 text-gray-800">Viewer</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800 text-sm">Viewer</Badge>;
       default:
-        return <Badge variant="outline">{role}</Badge>;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <UserCheck className="h-4 w-4 text-green-600" />;
-      case 'inactive':
-        return <UserX className="h-4 w-4 text-red-600" />;
-      case 'pending':
-        return <Calendar className="h-4 w-4 text-yellow-600" />;
-      default:
-        return <User className="h-4 w-4 text-gray-600" />;
+        return <Badge variant="outline" className="text-sm">{role}</Badge>;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CL', {
+    return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
   };
 
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
+    <Card className="hover:shadow-lg transition-all duration-300 hover-lift">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-lg font-medium text-gray-600">
-                {member.firstName[0]}{member.lastName[0]}
-              </span>
-            </div>
+          <div className="flex items-center space-x-4">
+            {member.avatar ? (
+              <img 
+                src={member.avatar} 
+                alt={`${member.firstName} ${member.lastName}`}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                {getInitials(member.firstName, member.lastName)}
+              </div>
+            )}
             <div>
-              <CardTitle className="text-lg">
+              <CardTitle className="text-lg font-semibold text-neutral-900">
                 {member.firstName} {member.lastName}
               </CardTitle>
-              <CardDescription className="flex items-center space-x-2">
-                {getStatusIcon(member.status)}
-                <span>{member.email}</span>
-              </CardDescription>
+              <div className="flex items-center space-x-2 mt-1">
+                {getStatusBadge(member.status)}
+                {getRoleBadge(member.role)}
+              </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            {getStatusBadge(member.status)}
-            {getRoleBadge(member.role)}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowActions(!showActions)}
+              className="p-2"
+            >
+              <MoreHorizontal className="h-4 w-4 text-neutral-700" />
+            </Button>
+            {showActions && (
+              <div className="absolute right-0 top-10 bg-white border border-neutral-200 rounded-lg shadow-lg z-10 min-w-[120px]">
+                {onView && (
+                  <button
+                    onClick={() => onView(member)}
+                    className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 flex items-center space-x-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span>Ver</span>
+                  </button>
+                )}
+                {onEdit && (
+                  <button
+                    onClick={() => onEdit(member)}
+                    className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 flex items-center space-x-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    <span>Editar</span>
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={() => onDelete(member.id)}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Eliminar</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Información de contacto */}
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Mail className="h-4 w-4" />
-            <span>{member.email}</span>
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <Mail className="h-4 w-4 text-neutral-700" />
+            <span className="text-lg font-medium text-neutral-700">
+              {member.email}
+            </span>
           </div>
+          
           {member.phone && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Phone className="h-4 w-4" />
-              <span>{member.phone}</span>
+            <div className="flex items-center space-x-3">
+              <Phone className="h-4 w-4 text-neutral-700" />
+              <span className="text-neutral-700">{member.phone}</span>
             </div>
           )}
-        </div>
-
-        {/* Fechas */}
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Calendar className="h-4 w-4" />
-            <span>Se unió: {formatDate(member.joinedAt)}</span>
+          
+          <div className="flex items-center space-x-3">
+            <Calendar className="h-4 w-4 text-neutral-700" />
+            <span className="text-neutral-700">
+              Miembro desde {formatDate(member.joinedAt)}
+            </span>
           </div>
+          
           {member.lastActive && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <User className="h-4 w-4" />
-              <span>Última actividad: {formatDate(member.lastActive)}</span>
+            <div className="flex items-center space-x-3">
+              <User className="h-4 w-4 text-neutral-700" />
+              <span className="text-neutral-700">
+                Última actividad: {formatDate(member.lastActive)}
+              </span>
+            </div>
+          )}
+          
+          {member.location && (
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-4 w-4 text-neutral-700" />
+              <span className="text-neutral-700">{member.location}</span>
             </div>
           )}
         </div>
-
-        {/* Acciones */}
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="text-xs text-gray-500">
-            ID: {member.id}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(member)}
-              className="h-8 w-8 p-0"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(member.id)}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+        
+        <div className="mt-4 pt-4 border-t border-neutral-200">
+          <div className="flex items-center justify-between text-sm text-neutral-700">
+            <span>ID: {member.id}</span>
+            <span className="text-xs text-neutral-600">
+              Actualizado: {formatDate(member.joinedAt)}
+            </span>
           </div>
         </div>
       </CardContent>

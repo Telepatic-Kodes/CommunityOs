@@ -281,7 +281,7 @@ export default function InitiativesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-600">
               {stats.completed} completadas, {stats.inProgress} en progreso
             </p>
           </CardContent>
@@ -294,7 +294,7 @@ export default function InitiativesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageProgress}%</div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-600">
               Progreso general de todas las iniciativas
             </p>
           </CardContent>
@@ -307,7 +307,7 @@ export default function InitiativesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalBudget)}</div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-600">
               {formatCurrency(stats.totalSpent)} ejecutado
             </p>
           </CardContent>
@@ -320,7 +320,7 @@ export default function InitiativesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.onHold}</div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-600">
               Iniciativas que requieren atención
             </p>
           </CardContent>
@@ -339,13 +339,13 @@ export default function InitiativesPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Búsqueda */}
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-500" />
               <input
                 type="text"
                 placeholder="Buscar iniciativas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-500 focus:border-transparent"
               />
             </div>
 
@@ -415,16 +415,16 @@ export default function InitiativesPage() {
                   {/* Información adicional */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span>{formatDate(initiative.startDate)} - {formatDate(initiative.endDate)}</span>
+                      <Calendar className="h-4 w-4 text-neutral-500" />
+                      <span className="text-neutral-600">{formatDate(initiative.startDate)} - {formatDate(initiative.endDate)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span>{initiative.teamMembers.length} miembros</span>
+                      <Users className="h-4 w-4 text-neutral-500" />
+                      <span className="text-neutral-600">{initiative.teamMembers.length} miembros</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <DollarSign className="h-4 w-4 text-gray-400" />
-                      <span>{formatCurrency(initiative.budget)}</span>
+                      <DollarSign className="h-4 w-4 text-neutral-500" />
+                      <span className="text-neutral-600">${initiative.budget.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       {getCategoryIcon(initiative.category)}
@@ -487,17 +487,17 @@ export default function InitiativesPage() {
                           {milestone.completed ? (
                             <CheckCircle className="h-4 w-4 text-green-600" />
                           ) : (
-                            <Clock className="h-4 w-4 text-gray-400" />
+                            <Clock className="h-4 w-4 text-neutral-500" />
                           )}
-                          <span className={milestone.completed ? 'line-through text-gray-500' : ''}>
+                                                      <span className={milestone.completed ? 'line-through text-neutral-600' : ''}>
                             {milestone.title}
                           </span>
                         </div>
-                        <span className="text-gray-500">{formatDate(milestone.dueDate)}</span>
+                                                    <span className="text-neutral-600">{formatDate(milestone.dueDate)}</span>
                       </div>
                     ))}
                     {initiative.milestones.length > 3 && (
-                      <div className="text-sm text-gray-500">
+                                              <div className="text-sm text-neutral-600">
                         +{initiative.milestones.length - 3} hitos más
                       </div>
                     )}
@@ -513,7 +513,7 @@ export default function InitiativesPage() {
       {filteredInitiatives.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
-            <Flag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <Flag className="h-12 w-12 text-neutral-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron iniciativas</h3>
             <p className="text-gray-600">
               No hay iniciativas que coincidan con los filtros aplicados.

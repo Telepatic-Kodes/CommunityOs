@@ -99,20 +99,20 @@ export function EventCard({ event, onView, onEdit, onDelete, onRegister }: Event
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center space-x-2 text-sm">
-          <Calendar className="h-4 w-4 text-gray-500" />
+                          <Calendar className="h-4 w-4 text-neutral-600" />
           <span className="text-gray-600">
             {formatDate(event.start_date)} - {formatDate(event.end_date)}
           </span>
         </div>
 
         <div className="flex items-center space-x-2 text-sm">
-          <MapPin className="h-4 w-4 text-gray-500" />
+                          <MapPin className="h-4 w-4 text-neutral-600" />
           <span className="text-gray-600">{event.location}</span>
         </div>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-gray-500" />
+                            <Users className="h-4 w-4 text-neutral-600" />
             <span className="text-sm text-gray-600">
               {event.registered_count}/{event.capacity} inscritos
             </span>

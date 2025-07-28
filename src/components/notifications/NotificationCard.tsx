@@ -1,7 +1,9 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Bell, Calendar, DollarSign, Vote, Users, X } from "lucide-react";
+'use client';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Bell, Calendar, DollarSign, Users, Vote, X } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -63,7 +65,7 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
   };
 
   return (
-    <Card className={`transition-all duration-200 ${!notification.isRead ? 'border-l-4 border-l-black bg-gray-50' : ''}`}>
+    <Card className={`transition-all duration-200 ${!notification.isRead ? 'border-l-4 border-l-black bg-neutral-50' : ''}`}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
@@ -72,17 +74,17 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
-                <h4 className={`font-medium ${!notification.isRead ? 'text-black' : 'text-gray-700'}`}>
+                <h4 className={`font-medium ${!notification.isRead ? 'text-neutral-900' : 'text-neutral-700'}`}>
                   {notification.title}
                 </h4>
                 {getTypeBadge()}
                 {!notification.isRead && (
-                  <div className="w-2 h-2 bg-black rounded-full"></div>
+                  <div className="w-2 h-2 bg-neutral-900 rounded-full"></div>
                 )}
               </div>
-              <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+              <p className="text-sm text-neutral-700 mb-2">{notification.message}</p>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-neutral-600">
                   {new Date(notification.createdAt).toLocaleDateString('es-CL', {
                     day: '2-digit',
                     month: 'short',
@@ -114,7 +116,7 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
             size="sm"
             variant="ghost"
             onClick={() => onDelete(notification.id)}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-neutral-600 hover:text-neutral-800"
           >
             <X className="h-4 w-4" />
           </Button>

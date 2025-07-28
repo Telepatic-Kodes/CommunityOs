@@ -128,7 +128,7 @@ export function VotingForm({ voting, onSubmit, onCancel, loading = false }: Voti
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
               placeholder="Descripción detallada de la votación..."
-              className="flex min-h-[80px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-h-[80px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               required
             />
           </div>
@@ -160,7 +160,7 @@ export function VotingForm({ voting, onSubmit, onCancel, loading = false }: Voti
             <div className="space-y-2">
               <Label htmlFor="total_voters">Total de Votantes</Label>
               <div className="relative">
-                <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Users className="absolute left-3 top-3 h-4 w-4 text-neutral-500" />
                 <Input
                   id="total_voters"
                   type="number"

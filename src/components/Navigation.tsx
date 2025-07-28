@@ -1,118 +1,136 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { 
-  Building2, 
-  Users, 
-  Calendar, 
-  DollarSign, 
-  Vote, 
-  BarChart3, 
-  Bell, 
-  Settings,
-  Menu,
-  X,
-  Home,
-  FileText,
-  Target
-} from 'lucide-react';
-
-const navigation = [
-  { name: 'Inicio', href: '/', icon: Home },
-  { name: 'Dashboard', href: '/dashboard', icon: Building2 },
-  { name: 'Miembros', href: '/members', icon: Users },
-  { name: 'Eventos', href: '/events', icon: Calendar },
-  { name: 'Pagos', href: '/payments', icon: DollarSign },
-  { name: 'Votaciones', href: '/voting', icon: Vote },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Notificaciones', href: '/notifications', icon: Bell },
-  { name: 'Iniciativas', href: '/initiatives', icon: Target },
-  { name: 'Configuración', href: '/settings', icon: Settings },
-  { name: 'Reporte', href: '/report', icon: FileText },
-];
+import { Building2, Menu, X, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useConfig } from '@/hooks/useConfig';
 
 export default function Navigation() {
-  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { config, loading } = useConfig();
+
+  const navigation = [
+    { name: 'Inicio', href: '/' },
+    { name: 'Funcionalidades', href: '/demo' },
+    { name: 'Precios', href: '/pricing' },
+    { name: 'Contacto', href: '/contact' },
+  ];
+
+  // Valor por defecto para el nombre de la organización
+  const organizationName = config?.organization?.name || 'CommunityOS';
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo y navegación desktop */}
-          <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">CommunityOS</span>
+    <>
+      {/* Banner editorial */}
+      <div className="bg-gradient-to-r from-neutral-900 to-neutral-800 border-b border-neutral-700">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-7 h-7 bg-neutral-700 rounded-lg flex items-center justify-center shadow-sm">
+                <Building2 className="h-4 w-4 text-neutral-200" />
+              </div>
+              <span className="text-neutral-100 text-base font-serif font-semibold tracking-wide">
+                Demo Funcional - CommunityOS
+              </span>
             </div>
-            
-            {/* Navegación desktop */}
-            <div className="hidden md:ml-6 md:flex md:space-x-8">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <item.icon className="h-4 w-4 mr-1" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+            <div className="text-neutral-200 text-sm font-serif font-medium bg-neutral-800 px-4 py-2 rounded-full">
+              Versión de demostración
             </div>
-          </div>
-
-          {/* Botón móvil */}
-          <div className="md:hidden flex items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </Button>
           </div>
         </div>
       </div>
 
-      {/* Menú móvil */}
-      {mobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
+      {/* Navegación principal - Editorial */}
+      <nav className="bg-white border-b border-neutral-200 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-24">
+            {/* Logo */}
+            <div className="flex items-center space-x-5">
+              <Link href="/" className="flex items-center space-x-5 group">
+                <div className="w-12 h-12 bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-xl flex items-center justify-center group-hover:from-neutral-800 group-hover:to-neutral-700 transition-all duration-300 shadow-md group-hover:shadow-lg">
+                  <Building2 className="h-7 w-7 text-white" />
+                </div>
+                <span className="text-3xl font-serif font-black text-neutral-900 group-hover:text-neutral-700 transition-colors duration-300 tracking-tight">
+                  {organizationName}
+                </span>
+              </Link>
+            </div>
+
+            {/* Navegación desktop */}
+            <div className="hidden md:flex items-center space-x-12">
+              {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-neutral-700 hover:text-neutral-900 font-serif font-semibold transition-all duration-300 relative group text-lg tracking-wide hover:scale-105"
                 >
-                  <item.icon className="h-5 w-5 mr-3" />
                   {item.name}
+                  <span className="absolute -bottom-3 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 group-hover:w-full transition-all duration-300 rounded-full shadow-sm"></span>
                 </Link>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="hidden md:flex items-center space-x-5">
+              <Button variant="ghost" size="lg" asChild className="hover:bg-gradient-to-r hover:from-neutral-100 hover:to-neutral-200">
+                <Link href="/login" className="text-lg font-serif font-semibold">Iniciar Sesión</Link>
+              </Button>
+              <Button variant="editorial" size="lg" asChild className="shadow-lg hover:shadow-xl">
+                <Link href="/dashboard" className="text-lg font-serif font-semibold group">
+                  Explorar Demo
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* Botón móvil */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-3"
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
-      )}
-    </nav>
+
+        {/* Menú móvil */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-t border-neutral-200 shadow-lg">
+            <div className="px-4 py-6 space-y-4">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="block text-neutral-700 hover:text-neutral-900 font-serif font-semibold text-lg py-3 transition-all duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <div className="pt-4 border-t border-neutral-200 space-y-4">
+                <Button variant="ghost" size="lg" asChild className="w-full justify-start text-lg font-serif font-semibold">
+                  <Link href="/login">Iniciar Sesión</Link>
+                </Button>
+                <Button variant="editorial" size="lg" asChild className="w-full justify-start text-lg font-serif font-semibold">
+                  <Link href="/dashboard">
+                    Explorar Demo
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+    </>
   );
 } 

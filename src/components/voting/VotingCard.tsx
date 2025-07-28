@@ -106,7 +106,7 @@ export function VotingCard({ voting, onView, onEdit, onDelete, onVote, hasVoted 
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center space-x-2 text-sm">
-          <Calendar className="h-4 w-4 text-gray-500" />
+                          <Calendar className="h-4 w-4 text-neutral-600" />
           <span className="text-gray-600">
             {formatDate(voting.start_date)} - {formatDate(voting.end_date)}
           </span>
@@ -114,7 +114,7 @@ export function VotingCard({ voting, onView, onEdit, onDelete, onVote, hasVoted 
 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-gray-500" />
+                            <Users className="h-4 w-4 text-neutral-600" />
             <span className="text-sm text-gray-600">
               {voting.current_votes}/{voting.total_voters} votos ({participationRate}%)
             </span>
@@ -134,7 +134,7 @@ export function VotingCard({ voting, onView, onEdit, onDelete, onVote, hasVoted 
             </div>
           ))}
           {voting.options.length > 3 && (
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-neutral-600">
               +{voting.options.length - 3} opciones más
             </div>
           )}

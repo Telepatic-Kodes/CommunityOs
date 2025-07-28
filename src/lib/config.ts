@@ -4,6 +4,8 @@
  */
 
 import { z } from 'zod';
+import { getDevelopmentConfig } from './configs/aiaiai';
+import { getProductionConfig } from './configs/production';
 
 // ============================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -99,24 +101,19 @@ const modulesSchema = z.object({
 });
 
 /**
- * Esquema para configuración de comunicación
+ * Esquema para configuración de comunicaciones
  */
 const communicationSchema = z.object({
-  email: z.object({
-    enabled: z.boolean().default(true),
-    provider: z.enum(['sendgrid', 'mailgun', 'ses']).default('sendgrid'),
-    fromEmail: z.string().email('Email de remitente inválido'),
-    fromName: z.string().min(2).max(100),
-    templates: z.record(z.string(), z.string()).default({}),
+  emailTemplates: z.object({
+    welcome: z.string().default('Bienvenido a nuestra comunidad'),
+    eventReminder: z.string().default('Recordatorio de evento'),
+    paymentConfirmation: z.string().default('Confirmación de pago'),
+    votingReminder: z.string().default('Recordatorio de votación'),
   }),
-  sms: z.object({
-    enabled: z.boolean().default(false),
-    provider: z.enum(['twilio', 'aws-sns']).optional(),
-    fromNumber: z.string().optional(),
-  }),
-  push: z.object({
+  notifications: z.object({
     enabled: z.boolean().default(true),
-    provider: z.enum(['firebase', 'onesignal']).default('firebase'),
+    frequency: z.enum(['immediate', 'daily', 'weekly']).default('immediate'),
+    channels: z.array(z.enum(['email', 'push', 'sms'])).default(['email']),
   }),
 });
 
@@ -124,21 +121,17 @@ const communicationSchema = z.object({
  * Esquema para configuración de seguridad
  */
 const securitySchema = z.object({
-  passwordPolicy: z.object({
-    minLength: z.number().min(8).max(128).default(8),
-    requireUppercase: z.boolean().default(true),
-    requireLowercase: z.boolean().default(true),
-    requireNumbers: z.boolean().default(true),
-    requireSymbols: z.boolean().default(true),
+  authentication: z.object({
+    requireEmailVerification: z.boolean().default(true),
+    requirePhoneVerification: z.boolean().default(false),
+    allowSocialLogin: z.boolean().default(true),
+    sessionTimeout: z.number().min(15).max(1440).default(60), // minutos
   }),
-  session: z.object({
-    timeout: z.number().min(300).max(86400).default(3600),
-    maxConcurrent: z.number().min(1).max(10).default(3),
-  }),
-  rateLimit: z.object({
-    enabled: z.boolean().default(true),
-    maxRequests: z.number().min(10).max(1000).default(100),
-    windowMs: z.number().min(1000).max(3600000).default(60000),
+  dataProtection: z.object({
+    encryptPersonalData: z.boolean().default(true),
+    anonymizeAnalytics: z.boolean().default(false),
+    gdprCompliance: z.boolean().default(true),
+    dataRetentionDays: z.number().min(30).max(3650).default(1095), // 3 años
   }),
 });
 
@@ -146,20 +139,21 @@ const securitySchema = z.object({
  * Esquema para configuración de integraciones
  */
 const integrationsSchema = z.object({
-  slack: z.object({
+  stripe: z.object({
     enabled: z.boolean().default(false),
-    webhookUrl: z.string().url('URL de webhook inválida').optional(),
-    channel: z.string().optional(),
+    publishableKey: z.string().optional(),
+    secretKey: z.string().optional(),
+    webhookSecret: z.string().optional(),
   }),
-  discord: z.object({
-    enabled: z.boolean().default(false),
-    webhookUrl: z.string().url('URL de webhook inválida').optional(),
-    channel: z.string().optional(),
-  }),
-  whatsapp: z.object({
+  sendgrid: z.object({
     enabled: z.boolean().default(false),
     apiKey: z.string().optional(),
-    phoneNumber: z.string().optional(),
+    fromEmail: z.string().email().optional(),
+  }),
+  google: z.object({
+    enabled: z.boolean().default(false),
+    clientId: z.string().optional(),
+    clientSecret: z.string().optional(),
   }),
 });
 
@@ -168,36 +162,49 @@ const integrationsSchema = z.object({
  */
 const regionalSchema = z.object({
   locale: z.string().default('es-ES'),
-  timezone: z.string().default('America/Santiago'),
-  currency: z.string().default('CLP'),
+  timezone: z.string().default('America/Mexico_City'),
+  currency: z.string().default('MXN'),
   dateFormat: z.string().default('DD/MM/YYYY'),
-  timeFormat: z.string().default('HH:mm'),
+  numberFormat: z.object({
+    decimal: z.string().default(','),
+    thousands: z.string().default('.'),
+  }),
 });
 
 /**
  * Esquema para configuración de soporte
  */
 const supportSchema = z.object({
-  enabled: z.boolean().default(true),
-  email: z.string().email('Email de soporte inválido').optional(),
-  phone: z.string().optional(),
-  hours: z.string().optional(),
-  documentation: z.string().url('URL de documentación inválida').optional(),
+  contact: z.object({
+    email: z.string().email().optional(),
+    phone: z.string().optional(),
+    website: z.string().url().optional(),
+  }),
+  help: z.object({
+    enabled: z.boolean().default(true),
+    documentation: z.string().url().optional(),
+    tutorials: z.string().url().optional(),
+  }),
 });
 
 /**
  * Esquema para configuración legal
  */
 const legalSchema = z.object({
-  privacyPolicy: z.string().url('URL de política de privacidad inválida').optional(),
-  termsOfService: z.string().url('URL de términos de servicio inválida').optional(),
-  cookiePolicy: z.string().url('URL de política de cookies inválida').optional(),
-  gdprCompliant: z.boolean().default(false),
+  termsOfService: z.string().url().optional(),
+  privacyPolicy: z.string().url().optional(),
+  cookiePolicy: z.string().url().optional(),
+  gdpr: z.object({
+    enabled: z.boolean().default(true),
+    consentRequired: z.boolean().default(true),
+    dataProcessingBasis: z.enum(['consent', 'legitimate_interest', 'contract']).default('consent'),
+  }),
 });
 
-/**
- * Esquema principal de configuración
- */
+// ============================================================================
+// ESQUEMA PRINCIPAL
+// ============================================================================
+
 const configSchema = z.object({
   organization: organizationSchema,
   branding: brandingSchema,
@@ -212,7 +219,7 @@ const configSchema = z.object({
 });
 
 // ============================================================================
-// TIPOS DERIVADOS
+// TIPOS EXPORTADOS
 // ============================================================================
 
 export type CommunityConfig = z.infer<typeof configSchema>;
@@ -231,27 +238,26 @@ export type LegalConfig = z.infer<typeof legalSchema>;
 // CONFIGURACIÓN POR DEFECTO
 // ============================================================================
 
-export const defaultConfig: CommunityConfig = {
+const defaultConfig: CommunityConfig = {
   organization: {
-    name: 'Mi Comunidad',
-    shortName: 'MC',
-    description: 'Una comunidad increíble para conectar personas',
-    email: 'admin@micomunidad.com',
-    website: 'https://micomunidad.com',
-    phone: '+56 9 1234 5678',
-    address: 'Santiago, Chile',
+    name: 'CommunityOS',
+    shortName: 'COS',
+    description: 'Plataforma de gestión inteligente para comunidades',
+    email: 'info@communityos.com',
+    website: 'https://communityos.com',
+    phone: '+52 55 1234 5678',
+    address: 'Ciudad de México, México',
     founded: '2024',
-    legalName: 'Mi Comunidad SpA',
-    taxId: '76.123.456-7',
+    legalName: 'CommunityOS, S.A. de C.V.',
+    taxId: 'COS240101ABC',
   },
   branding: {
-    logo: 'https://via.placeholder.com/200x80/3B82F6/FFFFFF?text=Logo',
-    favicon: 'https://via.placeholder.com/32x32/3B82F6/FFFFFF?text=F',
-    primaryColor: '#3B82F6',
-    secondaryColor: '#10B981',
+    logo: 'https://communityos.com/logo.png',
+    favicon: 'https://communityos.com/favicon.ico',
+    primaryColor: '#2563eb',
+    secondaryColor: '#7c3aed',
     theme: 'auto',
     fontFamily: 'Inter',
-    customCSS: '',
   },
   features: {
     events: true,
@@ -279,7 +285,7 @@ export const defaultConfig: CommunityConfig = {
     },
     payments: {
       enabled: true,
-      currency: 'CLP',
+      currency: 'MXN',
       allowMultiplePlans: true,
       requirePayment: false,
       providers: ['stripe'],
@@ -306,69 +312,67 @@ export const defaultConfig: CommunityConfig = {
     },
   },
   communication: {
-    email: {
-      enabled: true,
-      provider: 'sendgrid',
-      fromEmail: 'noreply@micomunidad.com',
-      fromName: 'Mi Comunidad',
-      templates: {},
+    emailTemplates: {
+      welcome: 'Bienvenido a nuestra comunidad',
+      eventReminder: 'Recordatorio de evento',
+      paymentConfirmation: 'Confirmación de pago',
+      votingReminder: 'Recordatorio de votación',
     },
-    sms: {
-      enabled: false,
-    },
-    push: {
+    notifications: {
       enabled: true,
-      provider: 'firebase',
+      frequency: 'immediate',
+      channels: ['email'],
     },
   },
   security: {
-    passwordPolicy: {
-      minLength: 8,
-      requireUppercase: true,
-      requireLowercase: true,
-      requireNumbers: true,
-      requireSymbols: true,
+    authentication: {
+      requireEmailVerification: true,
+      requirePhoneVerification: false,
+      allowSocialLogin: true,
+      sessionTimeout: 60,
     },
-    session: {
-      timeout: 3600,
-      maxConcurrent: 3,
-    },
-    rateLimit: {
-      enabled: true,
-      maxRequests: 100,
-      windowMs: 60000,
+    dataProtection: {
+      encryptPersonalData: true,
+      anonymizeAnalytics: false,
+      gdprCompliance: true,
+      dataRetentionDays: 1095,
     },
   },
   integrations: {
-    slack: {
+    stripe: {
       enabled: false,
     },
-    discord: {
+    sendgrid: {
       enabled: false,
     },
-    whatsapp: {
+    google: {
       enabled: false,
     },
   },
   regional: {
     locale: 'es-ES',
-    timezone: 'America/Santiago',
-    currency: 'CLP',
+    timezone: 'America/Mexico_City',
+    currency: 'MXN',
     dateFormat: 'DD/MM/YYYY',
-    timeFormat: 'HH:mm',
+    numberFormat: {
+      decimal: ',',
+      thousands: '.',
+    },
   },
   support: {
-    enabled: true,
-    email: 'soporte@micomunidad.com',
-    phone: '+56 9 1234 5678',
-    hours: 'Lunes a Viernes 9:00 - 18:00',
-    documentation: 'https://docs.micomunidad.com',
+    contact: {
+      email: 'soporte@communityos.com',
+    },
+    help: {
+      enabled: true,
+    },
   },
   legal: {
-    privacyPolicy: 'https://micomunidad.com/privacy',
-    termsOfService: 'https://micomunidad.com/terms',
-    cookiePolicy: 'https://micomunidad.com/cookies',
-    gdprCompliant: false,
+    gdpr: {
+      enabled: true,
+      consentRequired: true,
+      dataProcessingBasis: 'consent',
+    },
   },
 };
 
@@ -391,88 +395,97 @@ class ConfigManager {
     return ConfigManager.instance;
   }
 
-  /**
-   * Obtiene la configuración para una organización
-   */
   async getConfig(organizationId: string = 'default'): Promise<CommunityConfig> {
-    // Verificar cache
-    const cached = this.cache.get(organizationId);
-    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      return cached.config;
+    try {
+      // Verificar cache
+      const cached = this.cache.get(organizationId);
+      if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+        return cached.config;
+      }
+
+      // Cargar configuración
+      let config: CommunityConfig;
+      
+      if (organizationId === 'default') {
+        config = process.env.NODE_ENV === 'production' 
+          ? getProductionConfig() 
+          : getDevelopmentConfig();
+      } else {
+        config = await this.loadFromDatabase(organizationId);
+      }
+
+      // Validar configuración
+      const validation = this.validateConfig(config);
+      if (!validation.success) {
+        console.error('Error de validación de configuración:', validation.error);
+        config = defaultConfig;
+      }
+
+      // Actualizar cache
+      this.cache.set(organizationId, {
+        config,
+        timestamp: Date.now()
+      });
+
+      return config;
+    } catch (error) {
+      console.error('Error al cargar configuración:', error);
+      return defaultConfig;
     }
-
-    // Cargar configuración
-    let config: CommunityConfig;
-    
-    if (this.configs.has(organizationId)) {
-      config = this.configs.get(organizationId)!;
-    } else {
-      config = await this.loadFromDatabase(organizationId);
-      this.configs.set(organizationId, config);
-    }
-
-    // Actualizar cache
-    this.cache.set(organizationId, {
-      config,
-      timestamp: Date.now(),
-    });
-
-    return config;
   }
 
-  /**
-   * Actualiza la configuración de una organización
-   */
   async updateConfig(organizationId: string, updates: Partial<CommunityConfig>): Promise<void> {
-    const currentConfig = await this.getConfig(organizationId);
-    const updatedConfig = { ...currentConfig, ...updates };
-    
-    // Validar configuración actualizada
-    const validation = this.validateConfig(updatedConfig);
-    if (!validation.success) {
-      throw new Error(`Configuración inválida: ${validation.error}`);
-    }
+    try {
+      const currentConfig = await this.getConfig(organizationId);
+      const updatedConfig = { ...currentConfig, ...updates };
+      
+      const validation = this.validateConfig(updatedConfig);
+      if (!validation.success) {
+        throw new Error(`Configuración inválida: ${validation.error}`);
+      }
 
-    // Guardar configuración
-    this.configs.set(organizationId, updatedConfig);
-    await this.saveToDatabase(organizationId, updatedConfig);
-    
-    // Limpiar cache
-    this.clearCache(organizationId);
+      await this.saveToDatabase(organizationId, updatedConfig);
+      this.clearCache(organizationId);
+    } catch (error) {
+      console.error('Error al actualizar configuración:', error);
+      throw error;
+    }
   }
 
-  /**
-   * Valida una configuración
-   */
   validateConfig(config: unknown): { success: true; config: CommunityConfig } | { success: false; error: string } {
     try {
       const validatedConfig = configSchema.parse(config);
       return { success: true, config: validatedConfig };
     } catch (error) {
-      return { success: false, error: 'Error de validación de configuración' };
+      if (error instanceof z.ZodError) {
+        return { success: false, error: error.issues.map(e => e.message).join(', ') };
+      }
+      return { success: false, error: 'Error de validación desconocido' };
     }
   }
 
-  /**
-   * Carga configuración desde la base de datos
-   */
   private async loadFromDatabase(organizationId: string): Promise<CommunityConfig> {
-    // TODO: Implementar carga desde base de datos
-    console.log(`Cargando configuración para organización: ${organizationId}`);
-    return defaultConfig;
+    try {
+      // Simulación de carga desde base de datos
+      // En producción, aquí se cargaría desde Supabase
+      return defaultConfig;
+    } catch (error) {
+      console.error('Error al cargar desde base de datos:', error);
+      return defaultConfig;
+    }
   }
 
-  /**
-   * Guarda configuración en la base de datos
-   */
   private async saveToDatabase(organizationId: string, config: CommunityConfig): Promise<void> {
-    // TODO: Implementar guardado en base de datos
-    console.log(`Guardando configuración para organización: ${organizationId}`);
+    try {
+      // Simulación de guardado en base de datos
+      // En producción, aquí se guardaría en Supabase
+      console.log(`Configuración guardada para organización: ${organizationId}`);
+    } catch (error) {
+      console.error('Error al guardar en base de datos:', error);
+      throw error;
+    }
   }
 
-  /**
-   * Limpia el cache
-   */
   clearCache(organizationId?: string): void {
     if (organizationId) {
       this.cache.delete(organizationId);
@@ -482,11 +495,9 @@ class ConfigManager {
   }
 }
 
-
-
 // ============================================================================
 // EXPORTACIONES
 // ============================================================================
 
-export { ConfigManager };
-export { configSchema }; 
+export const configManager = ConfigManager.getInstance();
+export { defaultConfig }; 

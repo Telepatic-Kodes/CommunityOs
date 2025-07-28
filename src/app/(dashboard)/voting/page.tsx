@@ -229,12 +229,12 @@ export default function VotingPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">{voting.title}</h3>
-                    <p className="text-sm text-gray-500">{voting.description}</p>
+                    <p className="text-sm text-neutral-600">{voting.description}</p>
                     <div className="flex items-center space-x-4 mt-1">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-neutral-600">
                         {formatDate(voting.startDate)} - {formatDate(voting.endDate)}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-neutral-600">
                         {voting.totalVotes} votos de {voting.totalParticipants} participantes
                       </span>
                     </div>

@@ -32,17 +32,17 @@ export function BarChart({
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 
               dataKey="name" 
-              stroke="#666666"
+              stroke="#4b5563" // MEJORADO: Mejor contraste que #666666
               fontSize={12}
             />
             <YAxis 
-              stroke="#666666"
+              stroke="#4b5563" // MEJORADO: Mejor contraste que #666666
               fontSize={12}
             />
             <Tooltip 
               contentStyle={{
                 backgroundColor: '#ffffff',
-                border: '1px solid #e5e7eb',
+                border: '2px solid #e5e7eb', // MEJORADO: Borde más visible
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}

@@ -163,7 +163,7 @@ export default function PaymentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Gestión de Pagos</h1>
-          <p className="text-gray-600">Administra los pagos y membresías</p>
+          <p className="text-neutral-700">Administra los pagos y membresías</p>
         </div>
         <Button className="mt-4 sm:mt-0">
           <Plus className="h-4 w-4 mr-2" />
@@ -178,7 +178,7 @@ export default function PaymentsPage() {
             <div className="flex items-center space-x-2">
               <DollarSign className="h-5 w-5 text-green-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Ingresos Totales</p>
+                <p className="text-sm font-medium text-neutral-700">Ingresos Totales</p>
                 <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue, 'CLP')}</p>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function PaymentsPage() {
             <div className="flex items-center space-x-2">
               <Clock className="h-5 w-5 text-yellow-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Pendientes</p>
+                <p className="text-sm font-medium text-neutral-700">Pendientes</p>
                 <p className="text-2xl font-bold">{formatCurrency(stats.pendingAmount, 'CLP')}</p>
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function PaymentsPage() {
             <div className="flex items-center space-x-2">
               <AlertTriangle className="h-5 w-5 text-orange-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Vencidos</p>
+                <p className="text-sm font-medium text-neutral-700">Vencidos</p>
                 <p className="text-2xl font-bold">{formatCurrency(stats.overdueAmount, 'CLP')}</p>
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function PaymentsPage() {
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Completados</p>
+                <p className="text-sm font-medium text-neutral-700">Completados</p>
                 <p className="text-2xl font-bold">{stats.completedPayments}</p>
               </div>
             </div>
@@ -240,10 +240,10 @@ export default function PaymentsPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">{payment.memberName}</h3>
-                    <p className="text-sm text-gray-500">{payment.description}</p>
+                    <p className="text-sm text-neutral-600">{payment.description}</p>
                     <div className="flex items-center space-x-4 mt-1">
-                      <span className="text-xs text-gray-500">{payment.paymentMethod}</span>
-                      <span className="text-xs text-gray-500">{formatDate(payment.date)}</span>
+                                              <span className="text-xs text-neutral-600">{payment.paymentMethod}</span>
+                        <span className="text-xs text-neutral-600">{formatDate(payment.date)}</span>
                     </div>
                   </div>
                 </div>

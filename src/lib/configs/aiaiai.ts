@@ -1,170 +1,141 @@
-import { CommunityConfig } from '../config';
+import { type CommunityConfig } from '../config';
 
-export const aiaiaiConfig: CommunityConfig = {
-  // Información de la organización
-  organization: {
-    name: "AIAIAI CommunityOS",
-    shortName: "AIAIAI",
-    description: "Plataforma de gestión para la Asociación de Emprendedores de Chile",
-    website: "https://aiaiai.cl",
-    email: "info@aiaiai.cl",
-    phone: "+56 2 2345 6789",
-    address: "Av. Providencia 1234, Santiago, Chile",
-    founded: "2020",
-    legalName: "AIAIAI Consulting SpA",
-    taxId: "76.123.456-7",
-  },
-
-  // Branding y diseño
-  branding: {
-    primaryColor: "#1F2937", // Gris oscuro
-    secondaryColor: "#3B82F6", // Azul (antes accentColor)
-    logo: "/aiaiai-logo.svg",
-    favicon: "/aiaiai-favicon.ico",
-    theme: "light",
-    fontFamily: "Inter, system-ui, sans-serif",
-  },
-
-  // Funcionalidades habilitadas
-  features: {
-    events: true,
-    members: true,
-    payments: true,
-    voting: true,
-    analytics: true,
-    notifications: true,
-    portal: true,
-    settings: true,
-  },
-
-  // Configuración de módulos
-  modules: {
-    members: {
-      enabled: true,
-      maxMembers: 5000,
-      allowSelfRegistration: true,
-      requireApproval: true,
-      roles: ["admin", "member", "viewer"],
+export function getDevelopmentConfig(): CommunityConfig {
+  return {
+    organization: {
+      name: 'CommunityOS Development',
+      shortName: 'COS-DEV',
+      description: 'Plataforma de gestión inteligente para comunidades - Entorno de desarrollo',
+      email: 'dev@communityos.com',
+      website: 'https://dev.communityos.com',
+      phone: '+52 55 1234 5678',
+      address: 'Ciudad de México, México',
+      founded: '2024',
+      legalName: 'CommunityOS Development, S.A. de C.V.',
+      taxId: 'COS-DEV-240101',
     },
-    events: {
-      enabled: true,
-      maxEvents: 200,
-      allowRecurring: true,
-      requireApproval: true,
+    branding: {
+      logo: 'https://dev.communityos.com/logo.png',
+      favicon: 'https://dev.communityos.com/favicon.ico',
+      primaryColor: '#2563eb',
+      secondaryColor: '#7c3aed',
+      theme: 'auto',
+      fontFamily: 'Inter',
     },
-    payments: {
-      enabled: true,
-      currency: "CLP",
-      allowMultiplePlans: true,
-      requirePayment: false,
-      providers: ["stripe"],
+    features: {
+      events: true,
+      members: true,
+      payments: true,
+      voting: true,
+      analytics: true,
+      notifications: true,
+      portal: true,
+      settings: true,
     },
-    voting: {
-      enabled: true,
-      allowMultipleVotes: false,
-      requireAuthentication: true,
-      methods: ["simple", "ranked"],
-    },
-    analytics: {
-      enabled: true,
-      trackEvents: true,
-      trackMembers: true,
-      trackPayments: true,
-      privacyMode: false,
-    },
-    notifications: {
-      enabled: true,
-      email: true,
-      push: true,
-      sms: false,
-      channels: ["email", "push"],
-    },
-  },
-
-  // Configuración de comunicación
-  communication: {
-    email: {
-      enabled: true,
-      provider: "sendgrid",
-      fromEmail: "noreply@aiaiai.cl",
-      fromName: "AIAIAI",
-      templates: {
-        welcome: "aiaiai-welcome-email",
-        eventReminder: "aiaiai-event-reminder",
-        paymentConfirmation: "aiaiai-payment-confirmation",
-        votingReminder: "aiaiai-voting-reminder",
+    modules: {
+      events: {
+        enabled: true,
+        maxEvents: 50,
+        allowRecurring: true,
+        requireApproval: false,
+      },
+      members: {
+        enabled: true,
+        maxMembers: 500,
+        allowSelfRegistration: true,
+        requireApproval: false,
+        roles: ['admin', 'member', 'viewer'],
+      },
+      payments: {
+        enabled: true,
+        currency: 'MXN',
+        allowMultiplePlans: true,
+        requirePayment: false,
+        providers: ['stripe'],
+      },
+      voting: {
+        enabled: true,
+        allowMultipleVotes: false,
+        requireAuthentication: true,
+        methods: ['simple'],
+      },
+      analytics: {
+        enabled: true,
+        trackEvents: true,
+        trackMembers: true,
+        trackPayments: true,
+        privacyMode: false,
+      },
+      notifications: {
+        enabled: true,
+        email: true,
+        push: true,
+        sms: false,
+        channels: ['email', 'push'],
       },
     },
-    sms: {
-      enabled: false,
+    communication: {
+      emailTemplates: {
+        welcome: 'Bienvenido a nuestra comunidad de desarrollo',
+        eventReminder: 'Recordatorio de evento de desarrollo',
+        paymentConfirmation: 'Confirmación de pago de desarrollo',
+        votingReminder: 'Recordatorio de votación de desarrollo',
+      },
+      notifications: {
+        enabled: true,
+        frequency: 'immediate',
+        channels: ['email'],
+      },
     },
-    push: {
-      enabled: true,
-      provider: "firebase",
+    security: {
+      authentication: {
+        requireEmailVerification: false,
+        requirePhoneVerification: false,
+        allowSocialLogin: true,
+        sessionTimeout: 120,
+      },
+      dataProtection: {
+        encryptPersonalData: false,
+        anonymizeAnalytics: true,
+        gdprCompliance: false,
+        dataRetentionDays: 30,
+      },
     },
-  },
-
-  // Configuración de seguridad
-  security: {
-    passwordPolicy: {
-      minLength: 10,
-      requireUppercase: true,
-      requireLowercase: true,
-      requireNumbers: true,
-      requireSymbols: true,
+    integrations: {
+      stripe: {
+        enabled: false,
+      },
+      sendgrid: {
+        enabled: false,
+      },
+      google: {
+        enabled: false,
+      },
     },
-    session: {
-      timeout: 8 * 60 * 60, // 8 horas en segundos
-      maxConcurrent: 3,
+    regional: {
+      locale: 'es-ES',
+      timezone: 'America/Mexico_City',
+      currency: 'MXN',
+      dateFormat: 'DD/MM/YYYY',
+      numberFormat: {
+        decimal: ',',
+        thousands: '.',
+      },
     },
-    rateLimit: {
-      enabled: true,
-      maxRequests: 100,
-      windowMs: 60000,
+    support: {
+      contact: {
+        email: 'dev-support@communityos.com',
+      },
+      help: {
+        enabled: true,
+      },
     },
-  },
-
-  // Configuración de integraciones
-  integrations: {
-    slack: {
-      enabled: false,
+    legal: {
+      gdpr: {
+        enabled: false,
+        consentRequired: false,
+        dataProcessingBasis: 'consent',
+      },
     },
-    discord: {
-      enabled: false,
-    },
-    whatsapp: {
-      enabled: false,
-    },
-  },
-
-  // Configuración regional
-  regional: {
-    locale: "es-ES",
-    timezone: "America/Santiago",
-    currency: "CLP",
-    dateFormat: "DD/MM/YYYY",
-    timeFormat: "HH:mm",
-  },
-
-  // Configuración de soporte
-  support: {
-    enabled: true,
-    email: "soporte@aiaiai.cl",
-    phone: "+56 2 2345 6789",
-    hours: "Lunes-Viernes 9:00-18:00 CLT",
-    documentation: "https://docs.aiaiai.cl",
-  },
-
-  // Configuración legal
-  legal: {
-    privacyPolicy: "https://aiaiai.cl/privacidad",
-    termsOfService: "https://aiaiai.cl/terminos",
-    cookiePolicy: "https://aiaiai.cl/cookies",
-    gdprCompliant: true,
-  },
-};
-
-// Función para obtener configuración de AIAIAI
-export function getAiaiaiConfig(): CommunityConfig {
-  return aiaiaiConfig;
+  };
 } 

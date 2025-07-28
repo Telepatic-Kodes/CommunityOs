@@ -1,163 +1,108 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
+  LayoutDashboard, 
   Users, 
   Calendar, 
   DollarSign, 
   Vote, 
-  BarChart3, 
-  Bell, 
+  Target, 
   Settings, 
-  Building2,
+  Bell, 
+  BarChart3, 
+  Zap,
+  Activity,
   Menu,
   X,
-  User
+  ChevronRight,
+  Home,
+  User,
+  LogOut,
+  Loader2
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { DashboardLayout } from '@/components/ui/dashboard-layout';
+import { SidebarItem } from '@/components/ui/sidebar';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { FullScreenLoading } from '@/components/ui/loading';
 import { useConfig } from '@/hooks/useConfig';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Building2 },
-  { name: 'Miembros', href: '/members', icon: Users },
-  { name: 'Eventos', href: '/events', icon: Calendar },
-  { name: 'Pagos', href: '/payments', icon: DollarSign },
-  { name: 'Votaciones', href: '/voting', icon: Vote },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Notificaciones', href: '/notifications', icon: Bell },
-  { name: 'Configuración', href: '/settings', icon: Settings },
+const navigation: SidebarItem[] = [
+  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { title: 'Miembros', href: '/members', icon: Users },
+  { title: 'Eventos', href: '/events', icon: Calendar },
+  { title: 'Pagos', href: '/payments', icon: DollarSign },
+  { title: 'Votaciones', href: '/voting', icon: Vote },
+  { title: 'Iniciativas', href: '/initiatives', icon: Target },
+  { title: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { title: 'Reportes', href: '/report', icon: BarChart3 },
+  { title: 'Performance', href: '/performance', icon: Activity }, // ✅ AGREGADO
+  { title: 'Integraciones', href: '/integrations', icon: Zap },
+  { title: 'Notificaciones', href: '/notifications', icon: Bell },
+  { title: 'Configuración', href: '/settings', icon: Settings },
 ];
 
-export default function DashboardLayout({
+export default function DashboardLayoutWrapper({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { config } = useConfig();
+  const { config, loading, error } = useConfig();
+  const [mounted, setMounted] = useState(false);
+
+  // Manejar hidratación
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Obtener el título de la página actual
+  const getPageTitle = () => {
+    const currentNav = navigation.find(item => item.href === pathname);
+    return currentNav?.title || 'Dashboard';
+  };
+
+  // Crear breadcrumbs
+  const breadcrumbs = [
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: getPageTitle(), href: pathname }
+  ];
+
+  // Mostrar estado de carga
+  if (!mounted || loading) {
+    return <FullScreenLoading text="Cargando aplicación..." />;
+  }
+
+  // Mostrar error si existe
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-2">Error al cargar la aplicación</h2>
+          <p className="text-neutral-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Sidebar para móviles */}
-      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4 border-b">
-            <h1 className="text-lg font-semibold">{config.organization.name}</h1>
-            <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive
-                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="border-t p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Demo User</p>
-                <p className="text-xs text-gray-500">demo@communityos.com</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar para desktop */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex h-16 items-center px-4 border-b">
-            <h1 className="text-lg font-semibold">{config.organization.name}</h1>
-          </div>
-          <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive
-                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="border-t p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Demo User</p>
-                <p className="text-xs text-gray-500">demo@communityos.com</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Contenido principal */}
-      <div className="lg:pl-64">
-        {/* Header */}
-        <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/">← Volver al Inicio</Link>
-              </Button>
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium">Demo User</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Contenido de la página */}
-        <main className="p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
-      </div>
-    </div>
+    <ErrorBoundary>
+      <DashboardLayout
+        sidebarItems={navigation}
+        headerProps={{
+          title: getPageTitle(),
+          showSearch: true,
+          showNotifications: true
+        }}
+      >
+        {children}
+      </DashboardLayout>
+    </ErrorBoundary>
   );
 } 

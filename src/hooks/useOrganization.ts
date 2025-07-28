@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useConfig } from '@/hooks/useConfig';
-import { getCurrentUserWithOrg, isAdmin, isOwner } from '@/lib/clerk';
 
 export interface OrganizationData {
   id: string;
@@ -30,36 +29,26 @@ export function useOrganization() {
       try {
         setLoading(true);
         
-        const { organization } = await getCurrentUserWithOrg();
+        // Mock data para demo
+        const data: OrganizationData = {
+          id: 'org_123',
+          name: config.organization.name,
+          slug: 'demo-organization',
+          imageUrl: '/api/placeholder/150/150',
+          isAdmin: true,
+          isOwner: true,
+          memberCount: 1247,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-12-15T00:00:00Z',
+          stats: {
+            members: 1247,
+            events: 45,
+            payments: 89,
+            voting: 12
+          }
+        };
         
-        if (organization) {
-          const [adminStatus, ownerStatus] = await Promise.all([
-            isAdmin(),
-            isOwner()
-          ]);
-
-          const data: OrganizationData = {
-            id: organization.id,
-            name: organization.name,
-            slug: organization.slug,
-            imageUrl: organization.imageUrl,
-            isAdmin: adminStatus,
-            isOwner: ownerStatus,
-            memberCount: 0, // TODO: Obtener de la base de datos
-            createdAt: organization.createdAt,
-            updatedAt: organization.updatedAt,
-            stats: {
-              members: 156,
-              events: 12,
-              payments: 89,
-              voting: 3
-            }
-          };
-          
-          setOrganizationData(data);
-        } else {
-          setOrganizationData(null);
-        }
+        setOrganizationData(data);
       } catch (error) {
         console.error('Error loading organization data:', error);
         setOrganizationData(null);
@@ -69,7 +58,7 @@ export function useOrganization() {
     };
 
     loadOrganizationData();
-  }, []);
+  }, [config.organization.name]);
 
   return {
     organization: organizationData,

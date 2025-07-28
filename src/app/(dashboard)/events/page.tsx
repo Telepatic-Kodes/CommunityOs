@@ -198,7 +198,7 @@ export default function EventsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Gestión de Eventos</h1>
-          <p className="text-gray-600">Administra los eventos de tu comunidad</p>
+          <p className="text-neutral-700">Administra los eventos de tu comunidad</p>
         </div>
         <Button onClick={handleAddEvent} className="mt-4 sm:mt-0">
           <Plus className="h-4 w-4 mr-2" />
@@ -213,7 +213,7 @@ export default function EventsPage() {
             <div className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Total</p>
+                <p className="text-sm font-medium text-neutral-700">Total</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
             </div>
@@ -225,7 +225,7 @@ export default function EventsPage() {
             <div className="flex items-center space-x-2">
               <Eye className="h-5 w-5 text-green-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Publicados</p>
+                <p className="text-sm font-medium text-neutral-700">Publicados</p>
                 <p className="text-2xl font-bold">{stats.published}</p>
               </div>
             </div>
@@ -237,7 +237,7 @@ export default function EventsPage() {
             <div className="flex items-center space-x-2">
               <Clock className="h-5 w-5 text-yellow-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Próximos</p>
+                <p className="text-sm font-medium text-neutral-700">Próximos</p>
                 <p className="text-2xl font-bold">{stats.upcoming}</p>
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function EventsPage() {
             <div className="flex items-center space-x-2">
               <Users className="h-5 w-5 text-purple-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">Borradores</p>
+                <p className="text-sm font-medium text-neutral-700">Borradores</p>
                 <p className="text-2xl font-bold">{stats.draft}</p>
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function EventsPage() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
                 <Input
                   placeholder="Buscar eventos..."
                   value={searchTerm}
@@ -302,19 +302,19 @@ export default function EventsPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">{event.title}</h3>
-                    <p className="text-sm text-gray-500">{event.description}</p>
-                    <div className="flex items-center space-x-4 mt-1">
+                    <p className="text-sm text-neutral-600">{event.description}</p>
+                    <div className="flex items-center space-x-4 text-sm">
                       <div className="flex items-center space-x-1">
-                        <MapPin className="h-3 w-3 text-gray-400" />
-                        <span className="text-xs text-gray-500">{event.location}</span>
+                        <MapPin className="h-3 w-3 text-neutral-500" />
+                        <span className="text-xs text-neutral-600">{event.location}</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Clock className="h-3 w-3 text-gray-400" />
-                        <span className="text-xs text-gray-500">{formatDate(event.start_date)}</span>
+                        <Clock className="h-3 w-3 text-neutral-500" />
+                        <span className="text-xs text-neutral-600">{formatDate(event.start_date)}</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Users className="h-3 w-3 text-gray-400" />
-                        <span className="text-xs text-gray-500">{event.max_participants} participantes</span>
+                        <Users className="h-3 w-3 text-neutral-500" />
+                        <span className="text-xs text-neutral-600">{event.max_participants} participantes</span>
                       </div>
                     </div>
                   </div>

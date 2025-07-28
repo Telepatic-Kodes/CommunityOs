@@ -118,7 +118,7 @@ export default function InitiativeCard({
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center justify-between text-xs text-neutral-600">
               <span>{formatDate(startDate)} - {formatDate(endDate)}</span>
               <span>{formatCurrency(budget)}</span>
             </div>
@@ -148,19 +148,19 @@ export default function InitiativeCard({
             {/* Información adicional */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-gray-400" />
+                <Calendar className="h-4 w-4 text-neutral-500" />
                 <span>{formatDate(startDate)} - {formatDate(endDate)}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4 text-gray-400" />
+                <Users className="h-4 w-4 text-neutral-500" />
                 <span>{teamMembers.length} miembros</span>
               </div>
               <div className="flex items-center space-x-2">
-                <DollarSign className="h-4 w-4 text-gray-400" />
+                <DollarSign className="h-4 w-4 text-neutral-500" />
                 <span>{formatCurrency(budget)}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Target className="h-4 w-4 text-gray-400" />
+                <Target className="h-4 w-4 text-neutral-500" />
                 <span>Líder: {leader}</span>
               </div>
             </div>

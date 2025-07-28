@@ -5,10 +5,10 @@ import { createClient } from '@supabase/supabase-js';
  * Maneja multi-tenancy y Row Level Security (RLS)
  */
 
-// Variables de entorno para Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Variables de entorno para Supabase con valores por defecto para desarrollo
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-key';
 
 // Cliente para el lado del cliente (browser)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
